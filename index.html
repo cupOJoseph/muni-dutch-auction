@@ -1,0 +1,1387 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dutch Auction Book — NYC Baseball Stadium Bond</title>
+<meta name="description" content="A simulation of a $500,000,000 municipal bond sale priced by single-price Dutch auction, with a live order book, demand ladder and allocations.">
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; }
+  input, button { font: inherit; color: inherit; }
+  h1, h2, p, ol, li { margin: 0; }
+</style>
+<style>
+  :root {
+    --paper:      #E6E9F0;
+    --paper-2:    #DCE1EB;
+    --panel:      #FFFFFF;
+    --ink:        #0A1224;
+    --ink-soft:   #253253;
+    --muted:      #6A7793;
+    --navy:       #14315E;
+    --blue:       #1B4BD8;
+    --blue-2:     #4C82FF;
+    --blue-wash:  #C9D8F7;
+    --line:       #0A1224;
+    --line-soft:  #A9B4CB;
+    --good:       #0D6E4E;
+    --warn:       #A9640A;
+    --bad:        #A82B1B;
+    --shadow:     #0A1224;
+
+    --lw: 2px;
+    --lw-thick: 3px;
+
+    --f-display: "Helvetica Neue", Helvetica, "Arial Narrow", Arial, sans-serif;
+    --f-mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    --f-body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper:     #060B15;
+      --paper-2:   #0B1220;
+      --panel:     #0E1728;
+      --ink:       #E7EDF9;
+      --ink-soft:  #B3C0DA;
+      --muted:     #7E8CAC;
+      --navy:      #5C8AD9;
+      --blue:      #4C82FF;
+      --blue-2:    #86AEFF;
+      --blue-wash: #1B2C4E;
+      --line:      #33486F;
+      --line-soft: #24365A;
+      --good:      #35B98A;
+      --warn:      #DDA13B;
+      --bad:       #E4715C;
+      --shadow:    #000000;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:     #060B15;
+    --paper-2:   #0B1220;
+    --panel:     #0E1728;
+    --ink:       #E7EDF9;
+    --ink-soft:  #B3C0DA;
+    --muted:     #7E8CAC;
+    --navy:      #5C8AD9;
+    --blue:      #4C82FF;
+    --blue-2:    #86AEFF;
+    --blue-wash: #1B2C4E;
+    --line:      #33486F;
+    --line-soft: #24365A;
+    --good:      #35B98A;
+    --warn:      #DDA13B;
+    --bad:       #E4715C;
+    --shadow:    #000000;
+  }
+  :root[data-theme="light"] {
+    --paper:      #E6E9F0;
+    --paper-2:    #DCE1EB;
+    --panel:      #FFFFFF;
+    --ink:        #0A1224;
+    --ink-soft:   #253253;
+    --muted:      #6A7793;
+    --navy:       #14315E;
+    --blue:       #1B4BD8;
+    --blue-2:     #4C82FF;
+    --blue-wash:  #C9D8F7;
+    --line:       #0A1224;
+    --line-soft:  #A9B4CB;
+    --good:       #0D6E4E;
+    --warn:       #A9640A;
+    --bad:        #A82B1B;
+    --shadow:     #0A1224;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--f-body);
+    font-size: 14px;
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+    background-image:
+      linear-gradient(var(--paper-2) 1px, transparent 1px),
+      linear-gradient(90deg, var(--paper-2) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+
+  .wrap {
+    max-width: 1480px;
+    margin: 0 auto;
+    padding: 18px 22px 60px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  /* ---------- primitives ---------- */
+  .box {
+    background: var(--panel);
+    border: var(--lw) solid var(--line);
+    box-shadow: 5px 5px 0 var(--shadow);
+  }
+  .lab {
+    font-family: var(--f-mono);
+    font-size: 9.5px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 600;
+  }
+  .num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+  .hd {
+    font-family: var(--f-display);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    margin: 0;
+  }
+
+  /* ---------- header ---------- */
+  .masthead {
+    background: var(--navy);
+    border: var(--lw-thick) solid var(--line);
+    box-shadow: 6px 6px 0 var(--shadow);
+    color: #F3F6FD;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 16px;
+    align-items: stretch;
+  }
+  :root[data-theme="dark"] .masthead,
+  .masthead { }
+  @media (prefers-color-scheme: dark) {
+    .masthead { background: #0F2547; }
+  }
+  :root[data-theme="dark"] .masthead { background: #0F2547; }
+  :root[data-theme="light"] .masthead { background: var(--navy); }
+
+  .mast-l { padding: 14px 18px 15px; display: flex; flex-direction: column; gap: 7px; }
+  .simchip {
+    display: inline-flex; align-items: center; gap: 7px;
+    align-self: flex-start;
+    background: var(--blue-2);
+    color: #06132C;
+    border: var(--lw) solid #06132C;
+    padding: 2px 8px 3px;
+    font-family: var(--f-mono);
+    font-size: 9.5px; font-weight: 700;
+    letter-spacing: 0.14em; text-transform: uppercase;
+  }
+  .simchip b { font-weight: 800; }
+  .deal { font-size: clamp(21px, 3vw, 34px); line-height: 0.98; color: #FFF; }
+  :root[data-theme="dark"] .deal, .deal { color: #F6F9FF; }
+  .subline {
+    display: flex; flex-wrap: wrap; gap: 6px 16px;
+    font-family: var(--f-mono); font-size: 10.5px;
+    letter-spacing: 0.06em; color: #A9C0E8; text-transform: uppercase;
+  }
+  .subline span b { color: #E4EDFC; font-weight: 600; }
+
+  .mast-r {
+    border-left: var(--lw-thick) solid var(--line);
+    padding: 13px 16px;
+    display: flex; flex-direction: column; gap: 10px;
+    align-items: flex-end; justify-content: space-between;
+    min-width: 260px;
+  }
+  .clock { text-align: right; }
+  .clock .day {
+    font-family: var(--f-display); font-weight: 800;
+    font-size: 15px; letter-spacing: 0.04em; color: #FFF;
+    text-transform: uppercase;
+  }
+  .clock .tt {
+    font-family: var(--f-mono); font-size: 22px; font-weight: 500;
+    font-variant-numeric: tabular-nums; color: var(--blue-2);
+    line-height: 1.1;
+  }
+  .ctrls { display: flex; gap: 8px; align-items: stretch; }
+  button {
+    font-family: var(--f-mono); text-transform: uppercase;
+    letter-spacing: 0.1em; font-weight: 700; font-size: 11px;
+    border: var(--lw) solid #06132C;
+    background: var(--blue-2); color: #06132C;
+    padding: 9px 15px; cursor: pointer;
+    box-shadow: 3px 3px 0 #06132C;
+    transition: transform .06s, box-shadow .06s;
+  }
+  button:hover { transform: translate(-1px,-1px); box-shadow: 4px 4px 0 #06132C; }
+  button:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 #06132C; }
+  button:focus-visible { outline: 3px solid #FFF; outline-offset: 2px; }
+  button.ghost {
+    background: transparent; color: #CFDDF5; border-color: #6E8FC7;
+    box-shadow: 3px 3px 0 rgba(0,0,0,.45);
+  }
+  button.ghost:hover { background: rgba(255,255,255,.08); }
+  button[disabled] { opacity: .4; cursor: not-allowed; transform: none !important; }
+  .runbtn { font-size: 12.5px; padding: 11px 20px; }
+
+  /* ---------- timeline ---------- */
+  .timeline { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; }
+  .tl-day {
+    border: var(--lw) solid var(--line);
+    border-right-width: 0;
+    background: var(--panel);
+    padding: 7px 10px 8px;
+    position: relative; overflow: hidden;
+  }
+  .tl-day:last-child { border-right-width: var(--lw); }
+  .tl-day .fill {
+    position: absolute; inset: 0 auto 0 0; width: 0;
+    background: var(--blue-wash);
+  }
+  .tl-day .txt { position: relative; display: flex; justify-content: space-between; gap: 8px; }
+  .tl-day.done .txt .st { color: var(--good); }
+  .tl-day.live .txt .st { color: var(--blue); }
+
+  /* ---------- stat tiles ---------- */
+  .tiles { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; }
+  .tile { padding: 11px 13px 12px; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+  .tile .v {
+    font-family: var(--f-mono); font-variant-numeric: tabular-nums;
+    font-size: clamp(19px, 2vw, 26px); font-weight: 500; line-height: 1.05;
+    letter-spacing: -0.02em;
+  }
+  .tile .foot { font-family: var(--f-mono); font-size: 10px; color: var(--muted); letter-spacing: .04em; }
+  .tile.hero { background: var(--blue); border-color: var(--line); }
+  .tile.hero .lab { color: #BFD3FB; }
+  .tile.hero .v { color: #FFF; font-size: clamp(24px, 2.6vw, 34px); font-weight: 600; }
+  .tile.hero .foot { color: #C8D9FB; }
+  .tile.hero.pending { background: var(--panel); }
+  .tile.hero.pending .lab { color: var(--muted); }
+  .tile.hero.pending .v { color: var(--warn); font-size: clamp(16px,1.7vw,21px); }
+  .tile.hero.pending .foot { color: var(--muted); }
+  .flash { animation: flash .5s ease-out; }
+  @keyframes flash { from { background: var(--blue-2); } to { background: transparent; } }
+
+  .termin {
+    font-family: var(--f-mono); font-variant-numeric: tabular-nums;
+    font-size: 20px; font-weight: 500; width: 100%;
+    background: transparent; color: var(--ink);
+    border: 0; border-bottom: var(--lw) dashed var(--line-soft);
+    padding: 0 0 2px; letter-spacing: -0.02em;
+  }
+  .termin:focus { outline: none; border-bottom-color: var(--blue); background: var(--blue-wash); }
+  .termin:disabled { border-bottom-color: transparent; color: var(--ink); }
+
+  /* ---------- subscription meter ---------- */
+  .meter-box { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 9px; }
+  .meter-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  .meter {
+    position: relative; height: 34px;
+    border: var(--lw) solid var(--line);
+    background: var(--paper-2);
+    overflow: hidden;
+  }
+  .m-seg { position: absolute; top: 0; bottom: 0; left: 0; width: 0; transition: width .3s ease-out; }
+  .m-fill { background: var(--blue); z-index: 2; }
+  .m-over { background: var(--blue-wash); z-index: 1;
+    background-image: repeating-linear-gradient(135deg, transparent 0 5px, var(--navy) 5px 6px); }
+  .m-notch { position: absolute; top: -2px; bottom: -2px; width: 0; border-left: var(--lw-thick) solid var(--ink); z-index: 4; }
+  .m-notch::after {
+    content: "TARGET"; position: absolute; left: 4px; top: 3px;
+    font-family: var(--f-mono); font-size: 9px; letter-spacing: .12em; font-weight: 700;
+    color: var(--ink); background: var(--panel); padding: 1px 3px; border: 1px solid var(--line);
+    white-space: nowrap;
+  }
+
+  /* ---------- 2-col grids ---------- */
+  .grid-main { display: grid; grid-template-columns: minmax(0,1.32fr) minmax(0,1fr); gap: 18px; align-items: start; }
+  .grid-tail { display: grid; grid-template-columns: minmax(0,1.32fr) minmax(0,1fr); gap: 18px; align-items: start; }
+
+  .panel-hd {
+    display: flex; justify-content: space-between; align-items: center; gap: 12px;
+    padding: 9px 13px 10px;
+    border-bottom: var(--lw) solid var(--line);
+    background: var(--paper-2);
+  }
+  .panel-hd h2 { font-family: var(--f-display); font-weight: 800; text-transform: uppercase; font-size: 13px; letter-spacing: 0.02em; margin: 0; }
+  .panel-hd .note { font-family: var(--f-mono); font-size: 9.5px; letter-spacing: .1em; color: var(--muted); text-transform: uppercase; }
+
+  /* ---------- ladder ---------- */
+  .ladder-body { padding: 12px 13px 6px; }
+  .lad-scale { position: relative; height: 16px; margin: 0 0 6px; }
+  .lad-scale .zone { position: absolute; left: 58px; right: 78px; top: 0; height: 100%; }
+  .lad-scale .tick {
+    position: absolute; top: 0; transform: translateX(-50%);
+    font-family: var(--f-mono); font-size: 9px; color: var(--muted); letter-spacing: .06em;
+    white-space: nowrap;
+  }
+  .lad-rows { position: relative; display: flex; flex-direction: column; }
+  .lad-overlay { position: absolute; left: 58px; right: 78px; top: 0; bottom: 0; pointer-events: none; z-index: 5; }
+  .goal-rule { position: absolute; top: -4px; bottom: -4px; border-left: var(--lw-thick) solid var(--ink); }
+  .goal-rule::before {
+    content: "$500M TARGET"; position: absolute; top: -1px; left: 5px;
+    font-family: var(--f-mono); font-size: 9px; font-weight: 700; letter-spacing: .1em;
+    background: var(--ink); color: var(--panel); padding: 2px 4px; white-space: nowrap;
+  }
+  .res-rule { position: absolute; left: 0; right: 0; border-top: var(--lw) dashed var(--bad); }
+
+  .lad-row {
+    display: grid; grid-template-columns: 58px minmax(0,1fr) 78px;
+    align-items: center; height: 21px; position: relative;
+  }
+  .lad-row .r-rate {
+    font-family: var(--f-mono); font-variant-numeric: tabular-nums;
+    font-size: 11px; color: var(--ink-soft); text-align: right; padding-right: 9px;
+  }
+  .lad-row .r-val {
+    font-family: var(--f-mono); font-variant-numeric: tabular-nums;
+    font-size: 10.5px; color: var(--muted); text-align: right; padding-left: 8px;
+  }
+  .r-track { position: relative; height: 14px; border-left: 1px solid var(--line-soft); }
+  .r-track::before {
+    content: ""; position: absolute; left: 0; right: 0; top: 50%;
+    border-top: 1px dotted var(--line-soft);
+  }
+  .r-cum, .r-inc { position: absolute; top: 0; bottom: 0; transition: left .25s ease-out, width .25s ease-out; }
+  .r-cum { background: var(--blue-wash); }
+  .r-inc { background: var(--blue); border-right: 1px solid var(--panel); }
+  .lad-row.above .r-cum { background: var(--paper-2); }
+  .lad-row.above .r-inc { background: var(--muted); opacity: .55; }
+  .lad-row.inelig .r-rate { color: var(--bad); }
+  .lad-row.inelig .r-inc {
+    background: var(--bad); opacity: .5;
+    background-image: repeating-linear-gradient(135deg, transparent 0 3px, var(--panel) 3px 4px);
+  }
+  .lad-row.marker { }
+  .lad-row.marker .r-rate { color: var(--blue); font-weight: 700; }
+  .lad-row.marker::after {
+    content: ""; position: absolute; inset: -1px 0; border: var(--lw) solid var(--blue); pointer-events: none;
+  }
+  .lad-row.marker .clears {
+    position: absolute; right: 82px; top: 2px; z-index: 6;
+    font-family: var(--f-mono); font-size: 8.5px; font-weight: 700; letter-spacing: .1em;
+    background: var(--blue); color: #FFF; padding: 1px 5px 2px; white-space: nowrap;
+  }
+  .lad-row.decade .r-rate { font-weight: 700; color: var(--ink); }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; padding: 10px 13px 12px; border-top: var(--lw) solid var(--line); }
+  .lg { display: flex; align-items: center; gap: 6px; font-family: var(--f-mono); font-size: 9.5px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+  .sw { width: 15px; height: 10px; border: 1px solid var(--line); flex: none; }
+  .sw.a { background: var(--blue); }
+  .sw.b { background: var(--blue-wash); }
+  .sw.c { background: var(--muted); opacity: .55; }
+  .sw.d { background: var(--bad); opacity: .5; background-image: repeating-linear-gradient(135deg, transparent 0 3px, var(--panel) 3px 4px); }
+
+  /* ---------- tape ---------- */
+  .tape { max-height: 508px; overflow: hidden; }
+  .tape-row {
+    display: grid; grid-template-columns: 52px minmax(0,1fr) 74px 56px;
+    gap: 8px; align-items: center;
+    padding: 7px 12px; border-bottom: 1px solid var(--line-soft);
+  }
+  .tape-row.in { animation: slidein .32s cubic-bezier(.2,.7,.3,1); }
+  @keyframes slidein {
+    from { opacity: 0; transform: translateY(-9px); background: var(--blue-wash); }
+    to   { opacity: 1; transform: none; background: transparent; }
+  }
+  .tp-t { font-family: var(--f-mono); font-size: 10px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .tp-name { min-width: 0; }
+  .tp-name .nm { font-weight: 600; font-size: 12.5px; letter-spacing: -0.005em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tp-name .kd { font-family: var(--f-mono); font-size: 9px; letter-spacing: .12em; color: var(--muted); text-transform: uppercase; }
+  .tp-size { font-family: var(--f-mono); font-variant-numeric: tabular-nums; font-size: 12.5px; text-align: right; }
+  .tp-rate {
+    font-family: var(--f-mono); font-variant-numeric: tabular-nums; font-size: 12.5px;
+    text-align: right; font-weight: 600; color: var(--blue);
+  }
+  .tape-row.rev { background: var(--paper-2); }
+  .tape-row.rev .tp-rate { color: var(--good); }
+  .revtag {
+    display: inline-block; margin-left: 5px; vertical-align: 1px;
+    font-family: var(--f-mono); font-size: 8px; font-weight: 700; letter-spacing: .1em;
+    border: 1px solid var(--good); color: var(--good); padding: 0 3px;
+  }
+  .ineltag {
+    display: inline-block; margin-left: 5px; vertical-align: 1px;
+    font-family: var(--f-mono); font-size: 8px; font-weight: 700; letter-spacing: .1em;
+    border: 1px solid var(--bad); color: var(--bad); padding: 0 3px;
+  }
+  .empty { padding: 26px 14px; text-align: center; font-family: var(--f-mono); font-size: 10.5px; letter-spacing: .1em; color: var(--muted); text-transform: uppercase; }
+
+  /* ---------- investor list ---------- */
+  .inv-row {
+    display: grid; grid-template-columns: 20px minmax(0,1fr) 78px 62px;
+    gap: 9px; align-items: center; padding: 7px 12px;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .inv-row .rk { font-family: var(--f-mono); font-size: 10px; color: var(--muted); }
+  .inv-row .nm { font-weight: 600; font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .inv-row .amt { font-family: var(--f-mono); font-variant-numeric: tabular-nums; font-size: 12.5px; text-align: right; }
+  .inv-bar { height: 8px; border: 1px solid var(--line); background: var(--paper-2); position: relative; }
+  .inv-bar i { position: absolute; inset: 0 auto 0 0; background: var(--navy); transition: width .3s; }
+
+  /* ---------- allocation table ---------- */
+  .tbl-scroll { overflow-x: auto; max-height: 430px; overflow-y: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  thead th {
+    position: sticky; top: 0; z-index: 2;
+    background: var(--paper-2); text-align: left;
+    font-family: var(--f-mono); font-size: 9px; letter-spacing: .13em; text-transform: uppercase;
+    color: var(--muted); font-weight: 700;
+    padding: 8px 12px; border-bottom: var(--lw) solid var(--line); white-space: nowrap;
+  }
+  thead th.r, tbody td.r { text-align: right; }
+  tbody td { padding: 6px 12px; border-bottom: 1px solid var(--line-soft); white-space: nowrap; }
+  tbody td.nm { white-space: normal; font-weight: 600; }
+  tbody td.mono { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+  tbody tr.rejected td { color: var(--muted); }
+  .stat {
+    font-family: var(--f-mono); font-size: 9px; font-weight: 700; letter-spacing: .1em;
+    padding: 2px 6px 3px; border: 1px solid currentColor; text-transform: uppercase;
+  }
+  .stat.full { color: var(--good); }
+  .stat.part { color: var(--warn); }
+  .stat.rej  { color: var(--muted); }
+  .stat.inel { color: var(--bad); }
+
+  /* ---------- results ---------- */
+  .res-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .res-cell {
+    padding: 12px 14px 13px;
+    border-right: 1px solid var(--line-soft); border-bottom: 1px solid var(--line-soft);
+    display: flex; flex-direction: column; gap: 2px;
+  }
+  .res-cell:nth-child(2n) { border-right: 0; }
+  .res-cell .v { font-family: var(--f-mono); font-variant-numeric: tabular-nums; font-size: 19px; letter-spacing: -0.02em; }
+  .res-cell .v.pos { color: var(--good); }
+  .res-cell .sub { font-family: var(--f-mono); font-size: 9.5px; color: var(--muted); letter-spacing: .04em; }
+  .verdict {
+    padding: 13px 14px; border-top: var(--lw) solid var(--line);
+    font-size: 13px; line-height: 1.5;
+  }
+  .verdict b { font-weight: 700; }
+  .idle-note { padding: 22px 16px; color: var(--muted); font-size: 13px; line-height: 1.55; }
+  .idle-note ol { margin: 9px 0 0; padding-left: 20px; }
+  .idle-note li { margin-bottom: 5px; }
+
+  .footnote {
+    font-family: var(--f-mono); font-size: 10px; letter-spacing: .05em;
+    color: var(--muted); line-height: 1.7; text-transform: uppercase;
+    border-top: var(--lw) solid var(--line-soft); padding-top: 12px;
+  }
+
+  @media (max-width: 1080px) {
+    .grid-main, .grid-tail { grid-template-columns: 1fr; }
+    .tiles { grid-template-columns: repeat(2, 1fr); }
+    .tile.hero { grid-column: 1 / -1; }
+  }
+  @media (max-width: 700px) {
+    .wrap { padding: 12px 14px 44px; gap: 14px; }
+    .masthead { grid-template-columns: 1fr; }
+    .mast-r { border-left: 0; border-top: var(--lw-thick) solid var(--line); align-items: stretch; min-width: 0; }
+    .clock { text-align: left; }
+    .ctrls { flex-wrap: wrap; }
+    .tiles { grid-template-columns: 1fr; }
+    .lad-scale .zone, .lad-overlay { left: 48px; right: 60px; }
+    .lad-row { grid-template-columns: 48px minmax(0,1fr) 60px; }
+    .res-grid { grid-template-columns: 1fr; }
+    .res-cell { border-right: 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <!-- ============ MASTHEAD ============ -->
+  <header class="masthead">
+    <div class="mast-l">
+      <span class="simchip"><b>Simulation</b> · synthetic order book · not a real offering</span>
+      <h1 class="hd deal">New York City Municipal Stadium Authority<br>Baseball Stadium Revenue Bonds, Series 2026A</h1>
+      <div class="subline">
+        <span>Method <b>Single-Price Dutch Auction</b></span>
+        <span>Cusip <b>64971X&nbsp;AA9</b></span>
+        <span>Maturity <b>2056</b></span>
+        <span>Tax status <b>Fed Tax-Exempt</b></span>
+        <span>Min increment <b>$100,000</b></span>
+      </div>
+    </div>
+    <div class="mast-r">
+      <div class="clock">
+        <div class="day" id="dayLabel">Order period closed</div>
+        <div class="tt num" id="clockLabel">—:— &nbsp;·&nbsp; 00:00</div>
+      </div>
+      <div class="ctrls">
+        <button class="runbtn" id="runBtn">▶ Simulate run</button>
+        <button class="ghost" id="pauseBtn" disabled>Pause</button>
+        <button class="ghost" id="speedBtn">1×</button>
+        <button class="ghost" id="resetBtn" disabled>Reset</button>
+        <button class="ghost" id="themeBtn" aria-label="Switch between light and dark">◐</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ TIMELINE ============ -->
+  <div class="timeline" id="timeline"></div>
+
+  <!-- ============ TILES ============ -->
+  <section class="tiles">
+    <div class="box tile">
+      <span class="lab">Target par amount ($)</span>
+      <input class="termin num" id="targetIn" type="text" value="500,000,000" inputmode="numeric" aria-label="Target par amount in dollars">
+      <span class="foot" id="targetFoot">30-yr revenue bond</span>
+    </div>
+    <div class="box tile">
+      <span class="lab">Orders in book</span>
+      <span class="v" id="bookV">$0</span>
+      <span class="foot" id="bookFoot">0 orders · 0 investors</span>
+    </div>
+    <div class="box tile">
+      <span class="lab">Subscription</span>
+      <span class="v" id="covV">0.00×</span>
+      <span class="foot" id="covFoot">Awaiting orders</span>
+    </div>
+    <div class="box tile hero pending" id="clearTile">
+      <span class="lab">Clearing rate — all fills</span>
+      <span class="v num" id="clearV">Not covered</span>
+      <span class="foot" id="clearFoot">Every winning bid pays one rate</span>
+    </div>
+    <div class="box tile">
+      <span class="lab">Reserve rate — issuer cap (%)</span>
+      <input class="termin num" id="reserveIn" type="text" value="4.60" inputmode="decimal" aria-label="Reserve rate, maximum coupon, in percent">
+      <span class="foot">Bids above are ineligible</span>
+    </div>
+  </section>
+
+  <!-- ============ SUBSCRIPTION METER ============ -->
+  <section class="box meter-box">
+    <div class="meter-head">
+      <span class="lab">Capital committed vs. target</span>
+      <span class="lab" id="meterRead">$0 of $500,000,000 · 0.0%</span>
+    </div>
+    <div class="meter">
+      <div class="m-seg m-over" id="mOver"></div>
+      <div class="m-seg m-fill" id="mFill"></div>
+      <div class="m-notch" id="mNotch"></div>
+    </div>
+  </section>
+
+  <!-- ============ LADDER + TAPE ============ -->
+  <section class="grid-main">
+
+    <div class="box">
+      <div class="panel-hd">
+        <h2>Demand ladder — capital committed by rate</h2>
+        <span class="note" id="ladNote">Cumulative, ascending</span>
+      </div>
+      <div class="ladder-body">
+        <div class="lad-scale"><div class="zone" id="ladTicks"></div></div>
+        <div class="lad-rows" id="ladRows">
+          <div class="lad-overlay" id="ladOverlay">
+            <div class="goal-rule" id="goalRule" style="left:100%"></div>
+          </div>
+        </div>
+      </div>
+      <div class="legend">
+        <span class="lg"><i class="sw a"></i>New demand at this rate</span>
+        <span class="lg"><i class="sw b"></i>Cumulative at or below</span>
+        <span class="lg"><i class="sw c"></i>Above clearing — no fill</span>
+        <span class="lg"><i class="sw d"></i>Above reserve — ineligible</span>
+      </div>
+    </div>
+
+    <div class="box">
+      <div class="panel-hd">
+        <h2>Live order flow</h2>
+        <span class="note" id="tapeNote">Idle</span>
+      </div>
+      <div class="tape" id="tape">
+        <div class="empty">Press “Simulate run” to open the order period</div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ============ RESULTS + INVESTORS ============ -->
+  <section class="grid-tail">
+
+    <div class="box">
+      <div class="panel-hd">
+        <h2>Allocations at the clearing rate</h2>
+        <span class="note" id="allocNote">Pending pricing</span>
+      </div>
+      <div id="allocHost">
+        <div class="idle-note">
+          <b style="color:var(--ink)">How a single-price Dutch auction prices this deal.</b>
+          <ol>
+            <li>Investors submit a rate they require and a par amount, in $100,000 increments.</li>
+            <li>Orders are stacked from the lowest rate up until the $500,000,000 target is filled.</li>
+            <li>The rate that fills the last bond becomes the clearing rate.</li>
+            <li>Every winning investor pays that one rate — including those who bid lower.</li>
+            <li>Bids above the clearing rate get nothing; bids above the reserve never qualify.</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+    <div class="box">
+      <div class="panel-hd">
+        <h2>Book by investor</h2>
+        <span class="note" id="invNote">Top 12 by par</span>
+      </div>
+      <div id="invHost"><div class="empty">No orders yet</div></div>
+    </div>
+
+  </section>
+
+  <p class="footnote">
+    Demonstration only. Investor names, order sizes, rates and the offering itself are fabricated for illustration.
+    Firms shown — including BlackRock, Fidelity, Vanguard, PIMCO and others — appear as recognizable stand-ins for
+    institutional buyer types and did not participate in anything. Nothing here is an offer, a solicitation, or investment advice.
+  </p>
+
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ================= constants ================= */
+  var TOTAL_MS = 90000;            // 3-day sale compressed to 1.5 minutes
+  var DAYS = 3;
+  var LOT = 100000;                // $100k bidding increment
+  var STEP = 0.05;                 // rate ladder granularity
+  var LAD_LO = 3.65, LAD_HI = 4.80;
+
+  var target = 500000000;
+  var reserve = 4.60;
+
+  /* ================= investors ================= */
+  // Recognizable institutional names are used as stand-ins in this simulation.
+  var INVESTORS = [
+    ["BlackRock Municipal Income Trust",      "Bond fund",  "whale"],
+    ["Fidelity Tax-Free Bond Fund",           "Bond fund",  "whale"],
+    ["Vanguard Long-Term Tax-Exempt",         "Bond fund",  "whale"],
+    ["PIMCO Municipal Opportunities",         "Bond fund",  "whale"],
+    ["Nuveen AMT-Free Quality Muni",          "Bond fund",  "large"],
+    ["Capital Group Tax-Exempt Bond",         "Bond fund",  "large"],
+    ["Franklin Templeton Municipal Bond",     "Bond fund",  "large"],
+    ["Invesco Rochester Municipals",          "Bond fund",  "large"],
+    ["T. Rowe Price Tax-Free Income",         "Bond fund",  "large"],
+    ["Goldman Sachs Asset Management",        "SMA desk",   "large"],
+    ["AllianceBernstein Municipal SMA",       "SMA desk",   "mid"],
+    ["Eaton Vance Municipal SMA",             "SMA desk",   "mid"],
+    ["MacKay Shields Muni Managed Accts",     "SMA desk",   "mid"],
+    ["Breckinridge Capital Advisors",         "SMA desk",   "mid"],
+    ["Lord Abbett Short Duration Tax-Free",   "Bond fund",  "mid"],
+    ["Wells Fargo Advisors SMA Desk",         "SMA desk",   "mid"],
+    ["Empire Mutual Life Assurance",          "Insurance",  "large"],
+    ["Astoria Union Pension Trust",           "Pension",    "large"],
+    ["Hudson Ridge Capital Partners",         "Hedge fund", "mid"],
+    ["Ironbound Municipal Advisors",          "SMA desk",   "mid"],
+    ["Keystone Harbor Asset Mgmt",            "SMA desk",   "mid"],
+    ["Meridian Tax-Exempt Partners",          "Bond fund",  "mid"],
+    ["Verrazano Fixed Income Group",          "SMA desk",   "mid"],
+    ["Palisade Municipal Trust",              "Trust",      "mid"],
+    ["Gowanus Capital Management",            "Hedge fund", "mid"],
+    ["Delancey Yield Partners",               "Hedge fund", "mid"],
+    ["Flatiron Credit Partners",              "Hedge fund", "mid"],
+    ["Harlem Meer Capital",                   "Hedge fund", "mid"],
+    ["Atlantic Shore Casualty",               "Insurance",  "mid"],
+    ["Bayridge Mutual Insurance",             "Insurance",  "mid"],
+    ["Tribeca Endowment Pool",                "Endowment",  "mid"],
+    ["Nassau Point Advisors",                 "SMA desk",   "mid"],
+    ["Peekskill Municipal Fund",              "Bond fund",  "mid"],
+    ["Calder & Voss Wealth",                  "SMA desk",   "small"],
+    ["Sable Creek Advisors",                  "SMA desk",   "small"],
+    ["Wyckoff & Bell Private Clients",        "SMA desk",   "small"],
+    ["Rockaway Point Advisors",               "SMA desk",   "small"],
+    ["Larchmont Wealth Group",                "SMA desk",   "small"],
+    ["Van Cortlandt Family Office",           "Family off.","small"],
+    ["Cortland Savings Bank",                 "Bank",       "small"],
+    ["Sunnyside Community Bank",              "Bank",       "small"],
+    ["Throgs Neck Credit Union",              "Bank",       "small"]
+  ];
+
+  // par range expressed in $100k lots
+  var TIERS = {
+    whale: [250, 750],   // $25M – $75M
+    large: [140, 400],   // $14M – $40M
+    mid:   [50, 200],    // $5M  – $20M
+    small: [6, 40]       // $0.6M – $4M
+  };
+
+  /* ================= rng ================= */
+  function mulberry32(a) {
+    return function () {
+      a |= 0; a = a + 0x6D2B79F5 | 0;
+      var t = Math.imul(a ^ a >>> 15, 1 | a);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+
+  /* ================= formatting ================= */
+  function money(n) {
+    if (n >= 1e9) return "$" + (n / 1e9).toFixed(2) + "B";
+    if (n >= 1e6) return "$" + (n / 1e6).toFixed(n >= 1e8 ? 1 : 1) + "M";
+    if (n >= 1e3) return "$" + Math.round(n / 1e3) + "K";
+    return "$" + n;
+  }
+  function moneyExact(n) { return "$" + Math.round(n).toLocaleString("en-US"); }
+  function pct(r) { return r.toFixed(2) + "%"; }
+  function padz(n) { return (n < 10 ? "0" : "") + n; }
+
+  // 90s of wall clock -> three business days, 9:00a to 5:00p
+  function saleClock(p) {
+    p = Math.max(0, Math.min(0.999999, p));
+    var dayIdx = Math.floor(p * DAYS);
+    var frac = p * DAYS - dayIdx;
+    var mins = Math.floor(frac * 8 * 60);
+    var h24 = 9 + Math.floor(mins / 60), m = mins % 60;
+    var ampm = h24 >= 12 ? "PM" : "AM";
+    var h12 = h24 > 12 ? h24 - 12 : h24;
+    return { day: dayIdx + 1, label: h12 + ":" + padz(m) + " " + ampm };
+  }
+
+  /* ================= bid generation ================= */
+  var runSeed = 0;
+
+  function makeBids() {
+    runSeed++;
+    var rnd = mulberry32(20260417 + runSeed * 977);
+    var bids = [];
+    var id = 0;
+    var book = 0;
+    // aim for a well-oversubscribed book so the auction has a real clearing point
+    var bookGoal = target * (1.70 + rnd() * 0.18);
+    var guard = 0;
+
+    // rate appetite classes: aggressive buyers accept less yield to secure bonds
+    function drawRate(tier) {
+      var u = rnd();
+      var big = (tier === "whale" || tier === "large");
+      if (big) u = u * 0.82;                 // large accounts skew aggressive
+      var r;
+      if (u < 0.30)      r = 3.82 + rnd() * 0.26;   // 3.82 – 4.08
+      else if (u < 0.72) r = 4.08 + rnd() * 0.24;   // 4.08 – 4.32
+      else if (u < 0.92) r = 4.32 + rnd() * 0.26;   // 4.32 – 4.58
+      else               r = 4.58 + rnd() * 0.20;   // 4.58 – 4.78  (brushes the reserve)
+      return Math.round(r / STEP) * STEP;
+    }
+    function drawSize(tier) {
+      var t = TIERS[tier], lots = Math.floor(t[0] + rnd() * (t[1] - t[0] + 1));
+      return lots * LOT;
+    }
+
+    while (book < bookGoal && guard++ < 400) {
+      var inv = INVESTORS[Math.floor(rnd() * INVESTORS.length)];
+      var size = drawSize(inv[2]);
+      var rate = drawRate(inv[2]);
+      // arrival skews late: day 3 carries the heaviest flow, as in a real order period
+      var t = TOTAL_MS * (0.015 + 0.985 * Math.pow(rnd(), 1.55));
+      bids.push({
+        id: ++id, t: t, name: inv[0], kind: inv[1], tier: inv[2],
+        size: size, rate: rate, revises: null, superseded: false
+      });
+      book += size;
+    }
+
+    // a handful of accounts sharpen their rate on day three to protect an allocation
+    var candidates = bids.filter(function (b) {
+      return b.t < TOTAL_MS * 0.55 && b.rate >= 4.25;
+    });
+    for (var i = 0; i < candidates.length && i < 9; i++) {
+      var src = candidates[Math.floor(rnd() * candidates.length)];
+      if (!src || src.revisedBy) continue;
+      var newRate = Math.max(3.80, Math.round((src.rate - (0.15 + rnd() * 0.30)) / STEP) * STEP);
+      var rev = {
+        id: ++id, t: TOTAL_MS * (0.62 + rnd() * 0.36),
+        name: src.name, kind: src.kind, tier: src.tier,
+        size: src.size + (rnd() < 0.5 ? 0 : Math.floor(rnd() * 40) * LOT),
+        rate: newRate, revises: src.id, superseded: false
+      };
+      src.revisedBy = rev.id;
+      bids.push(rev);
+    }
+
+    bids.sort(function (a, b) { return a.t - b.t; });
+    return bids;
+  }
+
+  /* ================= book state ================= */
+  var state = {
+    phase: "idle",        // idle | running | paused | done
+    bids: [],
+    cursor: 0,
+    live: [],             // non-superseded, in arrival order
+    byId: {},
+    elapsed: 0,
+    speed: 1,
+    lastFrame: 0,
+    raf: 0
+  };
+
+  function bucketOf(rate) { return Math.round(rate / STEP) * STEP; }
+
+  // Stack eligible orders lowest rate first; the rate that fills the last bond clears.
+  function priceBook() {
+    var eligible = [], ineligible = [], bookAll = 0, bookElig = 0;
+    for (var i = 0; i < state.live.length; i++) {
+      var b = state.live[i];
+      if (b.superseded) continue;
+      bookAll += b.size;
+      if (b.rate <= reserve + 1e-9) { eligible.push(b); bookElig += b.size; }
+      else ineligible.push(b);
+    }
+    eligible.sort(function (a, b) { return a.rate - b.rate || b.size - a.size; });
+
+    var cum = 0, clearing = null;
+    for (var j = 0; j < eligible.length; j++) {
+      cum += eligible[j].size;
+      if (clearing === null && cum >= target) clearing = eligible[j].rate;
+    }
+    var covered = clearing !== null;
+    var settleRate = covered ? clearing : reserve;
+
+    // fills: below clearing take full par, the clearing tier pro-rates the remainder
+    var belowPar = 0;
+    for (var k = 0; k < eligible.length; k++) {
+      if (eligible[k].rate < settleRate - 1e-9) belowPar += eligible[k].size;
+    }
+    var atTier = eligible.filter(function (b) { return Math.abs(b.rate - settleRate) < 1e-9; });
+    var atTierPar = atTier.reduce(function (s, b) { return s + b.size; }, 0);
+    var remaining = Math.max(0, target - belowPar);
+    var ratio = atTierPar > 0 ? Math.min(1, remaining / atTierPar) : 0;
+
+    var allocations = [], allocated = 0;
+    eligible.forEach(function (b) {
+      var alloc = 0, status;
+      if (b.rate < settleRate - 1e-9) { alloc = b.size; status = "full"; }
+      else if (Math.abs(b.rate - settleRate) < 1e-9) {
+        // round pro-rata down to whole $100k lots
+        alloc = Math.floor(b.size * ratio / LOT) * LOT;
+        status = alloc >= b.size ? "full" : (alloc > 0 ? "part" : "rej");
+      } else { status = "rej"; }
+      allocated += alloc;
+      allocations.push({ bid: b, alloc: alloc, status: status });
+    });
+    ineligible.forEach(function (b) {
+      allocations.push({ bid: b, alloc: 0, status: "inel" });
+    });
+
+    // rate ladder buckets
+    var buckets = {}, order = [];
+    for (var r = LAD_LO; r <= LAD_HI + 1e-9; r += STEP) {
+      var key = bucketOf(r).toFixed(2);
+      buckets[key] = 0; order.push(key);
+    }
+    state.live.forEach(function (b) {
+      if (b.superseded) return;
+      var key = bucketOf(Math.max(LAD_LO, Math.min(LAD_HI, b.rate))).toFixed(2);
+      if (buckets[key] === undefined) buckets[key] = 0;
+      buckets[key] += b.size;
+    });
+
+    var names = {};
+    state.live.forEach(function (b) { if (!b.superseded) names[b.name] = true; });
+
+    return {
+      bookAll: bookAll, bookElig: bookElig,
+      covered: covered, clearing: clearing, settleRate: settleRate,
+      allocations: allocations, allocated: allocated,
+      proRata: ratio, atTierPar: atTierPar,
+      buckets: buckets, order: order,
+      orders: state.live.filter(function (b) { return !b.superseded; }).length,
+      investors: Object.keys(names).length,
+      eligible: eligible
+    };
+  }
+
+  /* ================= DOM ================= */
+  var $ = function (id) { return document.getElementById(id); };
+  var el = {
+    day: $("dayLabel"), clock: $("clockLabel"),
+    run: $("runBtn"), pause: $("pauseBtn"), speed: $("speedBtn"), reset: $("resetBtn"),
+    timeline: $("timeline"),
+    targetIn: $("targetIn"), targetFoot: $("targetFoot"),
+    bookV: $("bookV"), bookFoot: $("bookFoot"),
+    covV: $("covV"), covFoot: $("covFoot"),
+    clearTile: $("clearTile"), clearV: $("clearV"), clearFoot: $("clearFoot"),
+    reserveIn: $("reserveIn"),
+    meterRead: $("meterRead"), mFill: $("mFill"), mOver: $("mOver"), mNotch: $("mNotch"),
+    ladTicks: $("ladTicks"), ladRows: $("ladRows"), ladOverlay: $("ladOverlay"),
+    goalRule: $("goalRule"), ladNote: $("ladNote"),
+    tape: $("tape"), tapeNote: $("tapeNote"),
+    allocHost: $("allocHost"), allocNote: $("allocNote"),
+    invHost: $("invHost"), invNote: $("invNote")
+  };
+
+  /* ---------- timeline ---------- */
+  function buildTimeline() {
+    el.timeline.innerHTML = "";
+    for (var d = 1; d <= DAYS; d++) {
+      var box = document.createElement("div");
+      box.className = "tl-day";
+      box.innerHTML =
+        '<div class="fill"></div>' +
+        '<div class="txt"><span class="lab">Order day ' + d + '</span>' +
+        '<span class="lab st">—</span></div>';
+      el.timeline.appendChild(box);
+    }
+  }
+  function paintTimeline(p) {
+    var kids = el.timeline.children;
+    for (var d = 0; d < DAYS; d++) {
+      var lo = d / DAYS, hi = (d + 1) / DAYS;
+      var f = Math.max(0, Math.min(1, (p - lo) / (hi - lo)));
+      var node = kids[d];
+      node.querySelector(".fill").style.width = (f * 100) + "%";
+      var st = node.querySelector(".st");
+      node.className = "tl-day" + (f >= 1 ? " done" : (f > 0 ? " live" : ""));
+      st.textContent = f >= 1 ? "Closed" : (f > 0 ? "Open" : "Pending");
+    }
+  }
+
+  /* ---------- ladder shell ---------- */
+  var ladRowNodes = {};
+  function buildLadder() {
+    // ticks
+    el.ladTicks.innerHTML = "";
+    var scaleMax = ladScaleMax();
+    [0, 0.25, 0.5, 0.75, 1].forEach(function (f) {
+      var t = document.createElement("span");
+      t.className = "tick";
+      t.style.left = (f * 100) + "%";
+      t.textContent = money(scaleMax * f).replace("$0", "$0");
+      el.ladTicks.appendChild(t);
+    });
+
+    // rows (rebuilt only when the rate range changes)
+    Array.prototype.slice.call(el.ladRows.querySelectorAll(".lad-row")).forEach(function (n) { n.remove(); });
+    ladRowNodes = {};
+    for (var r = LAD_LO; r <= LAD_HI + 1e-9; r += STEP) {
+      var key = bucketOf(r).toFixed(2);
+      var row = document.createElement("div");
+      row.className = "lad-row" + (Math.abs(bucketOf(r) * 100 % 25) < 0.01 ? " decade" : "");
+      row.innerHTML =
+        '<div class="r-rate">' + key + '%</div>' +
+        '<div class="r-track"><div class="r-cum"></div><div class="r-inc"></div></div>' +
+        '<div class="r-val"></div>';
+      el.ladRows.appendChild(row);
+      ladRowNodes[key] = row;
+    }
+  }
+  var lastScaleMax = 0;
+  function ladScaleMax() {
+    var m = Math.max(target * 1.25, lastScaleMax);
+    return m;
+  }
+
+  function paintLadder(bk) {
+    var totalAll = bk.bookAll;
+    var want = Math.max(target * 1.25, totalAll * 1.04);
+    if (want > lastScaleMax * 1.0001 || lastScaleMax === 0) {
+      lastScaleMax = Math.ceil(want / 5e7) * 5e7;
+      // repaint ticks against the new scale
+      el.ladTicks.innerHTML = "";
+      [0, 0.25, 0.5, 0.75, 1].forEach(function (f) {
+        var t = document.createElement("span");
+        t.className = "tick"; t.style.left = (f * 100) + "%";
+        t.textContent = f === 0 ? "$0" : money(lastScaleMax * f).replace(".0M", "M");
+        el.ladTicks.appendChild(t);
+      });
+    }
+    var scale = lastScaleMax;
+
+    el.goalRule.style.left = Math.min(100, target / scale * 100) + "%";
+    el.goalRule.setAttribute("data-lbl", money(target));
+
+    var cum = 0;
+    bk.order.forEach(function (key) {
+      var row = ladRowNodes[key];
+      if (!row) return;
+      var rate = parseFloat(key);
+      var inc = bk.buckets[key] || 0;
+      var prev = cum;
+      var isInelig = rate > reserve + 1e-9;
+      if (!isInelig) cum += inc;
+
+      var cls = "lad-row";
+      if (Math.abs(rate * 100 % 25) < 0.01) cls += " decade";
+      if (isInelig) cls += " inelig";
+      else if (bk.covered && rate > bk.clearing + 1e-9) cls += " above";
+      if (bk.covered && Math.abs(rate - bk.clearing) < 1e-9) cls += " marker";
+      row.className = cls;
+
+      var cumBar = row.querySelector(".r-cum");
+      var incBar = row.querySelector(".r-inc");
+      var val = row.querySelector(".r-val");
+
+      if (isInelig) {
+        cumBar.style.width = "0%";
+        incBar.style.left = "0%";
+        incBar.style.width = (inc / scale * 100) + "%";
+      } else {
+        cumBar.style.width = (prev / scale * 100) + "%";
+        incBar.style.left = (prev / scale * 100) + "%";
+        incBar.style.width = (inc / scale * 100) + "%";
+      }
+      val.textContent = inc > 0 ? money(inc) : "";
+
+      var tag = row.querySelector(".clears");
+      if (cls.indexOf("marker") >= 0) {
+        if (!tag) { tag = document.createElement("span"); tag.className = "clears"; row.appendChild(tag); }
+        tag.textContent = "Clears here";
+      } else if (tag) tag.remove();
+    });
+
+    el.ladNote.textContent = bk.covered
+      ? "Clears at " + pct(bk.clearing)
+      : (bk.bookAll > 0 ? "Not yet covered" : "Cumulative, ascending");
+  }
+
+  /* ---------- tape ---------- */
+  function pushTape(b, clearingNow) {
+    var empty = el.tape.querySelector(".empty");
+    if (empty) empty.remove();
+    var c = saleClock(b.t / TOTAL_MS);
+    var row = document.createElement("div");
+    row.className = "tape-row in" + (b.revises ? " rev" : "");
+    var flags = "";
+    if (b.revises) flags = '<span class="revtag">Revised</span>';
+    else if (b.rate > reserve + 1e-9) flags = '<span class="ineltag">Above reserve</span>';
+    row.innerHTML =
+      '<div class="tp-t">D' + c.day + " " + c.label.replace(" ", "") + "</div>" +
+      '<div class="tp-name"><div class="nm">' + b.name + flags + "</div>" +
+      '<div class="kd">' + b.kind + "</div></div>" +
+      '<div class="tp-size num">' + money(b.size) + "</div>" +
+      '<div class="tp-rate num">' + pct(b.rate) + "</div>";
+    el.tape.insertBefore(row, el.tape.firstChild);
+    while (el.tape.children.length > 26) el.tape.removeChild(el.tape.lastChild);
+  }
+
+  /* ---------- investors ---------- */
+  function paintInvestors(bk) {
+    var agg = {};
+    state.live.forEach(function (b) {
+      if (b.superseded) return;
+      if (!agg[b.name]) agg[b.name] = { name: b.name, kind: b.kind, par: 0, best: 99, n: 0 };
+      agg[b.name].par += b.size;
+      agg[b.name].best = Math.min(agg[b.name].best, b.rate);
+      agg[b.name].n++;
+    });
+    var list = Object.keys(agg).map(function (k) { return agg[k]; })
+      .sort(function (a, b) { return b.par - a.par; });
+    if (!list.length) { el.invHost.innerHTML = '<div class="empty">No orders yet</div>'; return; }
+    var top = list.slice(0, 12);
+    var max = top[0].par;
+    var html = top.map(function (x, i) {
+      return '<div class="inv-row">' +
+        '<span class="rk num">' + padz(i + 1) + "</span>" +
+        '<span class="nm">' + x.name + "</span>" +
+        '<span class="amt">' + money(x.par) + "</span>" +
+        '<span class="inv-bar"><i style="width:' + (x.par / max * 100) + '%"></i></span>' +
+        "</div>";
+    }).join("");
+    el.invHost.innerHTML = html;
+    el.invNote.textContent = list.length + " investors · top 12 shown";
+  }
+
+  /* ---------- tiles / meter ---------- */
+  var lastClearingShown = null;
+  function paintStats(bk) {
+    el.bookV.textContent = moneyExact(bk.bookAll).replace(/,\d{3}$/, function (m) { return m; });
+    el.bookV.textContent = money(bk.bookAll);
+    el.bookFoot.textContent = bk.orders + " orders · " + bk.investors + " investors";
+
+    var cov = bk.bookElig / target;
+    el.covV.textContent = cov.toFixed(2) + "×";
+    el.covFoot.textContent = bk.bookElig >= target
+      ? moneyExact(bk.bookElig - target) + " above target"
+      : (bk.bookAll > 0 ? moneyExact(target - bk.bookElig) + " still needed" : "Awaiting orders");
+
+    if (bk.covered) {
+      el.clearTile.className = "box tile hero";
+      if (lastClearingShown !== bk.clearing) {
+        el.clearV.textContent = pct(bk.clearing);
+        el.clearV.classList.remove("flash");
+        void el.clearV.offsetWidth;
+        el.clearV.classList.add("flash");
+        lastClearingShown = bk.clearing;
+      }
+      el.clearFoot.textContent = "Every winning bid fills at this rate";
+    } else {
+      el.clearTile.className = "box tile hero pending";
+      el.clearV.textContent = bk.bookAll > 0 ? "Not covered" : "Not covered";
+      el.clearFoot.textContent = bk.bookAll > 0
+        ? (cov * 100).toFixed(0) + "% of target committed"
+        : "Every winning bid pays one rate";
+      lastClearingShown = null;
+    }
+
+    var scale = Math.max(target, bk.bookElig);
+    el.mFill.style.width = (Math.min(bk.bookElig, target) / scale * 100) + "%";
+    el.mOver.style.width = (bk.bookElig / scale * 100) + "%";
+    el.mNotch.style.left = (target / scale * 100) + "%";
+    el.meterRead.textContent = moneyExact(bk.bookElig) + " of " + moneyExact(target) +
+      " · " + (bk.bookElig / target * 100).toFixed(1) + "%";
+  }
+
+  /* ---------- allocations ---------- */
+  function paintAllocations(bk, final) {
+    if (!final) {
+      el.allocNote.textContent = bk.covered ? "Indicative — order period open" : "Pending pricing";
+    }
+    var rows = bk.allocations.slice().sort(function (a, b) {
+      return b.alloc - a.alloc || a.bid.rate - b.bid.rate;
+    });
+
+    var annual = bk.allocated * bk.settleRate / 100;
+    var vsReserve = bk.allocated * (reserve - bk.settleRate) / 100;
+    var filled = rows.filter(function (r) { return r.alloc > 0; });
+    var wavg = 0;
+    if (bk.bookElig > 0) {
+      var tot = 0, w = 0;
+      bk.eligible.forEach(function (b) { tot += b.size; w += b.size * b.rate; });
+      wavg = tot ? w / tot : 0;
+    }
+
+    var summary =
+      '<div class="res-grid">' +
+        cell("Clearing rate", pct(bk.settleRate), bk.covered ? "Set by the last bond sold" : "Fell back to the reserve") +
+        cell("Par sold", moneyExact(bk.allocated), (bk.allocated / target * 100).toFixed(1) + "% of target") +
+        cell("Annual interest cost", moneyExact(annual), "At " + pct(bk.settleRate) + " on par sold") +
+        cell("Saved vs. reserve", moneyExact(Math.max(0, vsReserve)) + "/yr", "Reserve was " + pct(reserve), vsReserve > 0) +
+        cell("Investors filled", filled.length + " of " + bk.allocations.length, "Pro-rata at clearing tier: " + (bk.proRata * 100).toFixed(1) + "%") +
+        cell("Weighted avg. bid", pct(wavg), "Across all eligible orders") +
+      "</div>";
+
+    var verdict;
+    if (!bk.covered) {
+      verdict = '<div class="verdict">Order period closed <b>undersubscribed</b>. Eligible demand of ' +
+        moneyExact(bk.bookElig) + " fell short of the " + moneyExact(target) +
+        " target, so pricing defaulted to the reserve rate of " + pct(reserve) +
+        " and only " + moneyExact(bk.allocated) + " of par was sold.</div>";
+    } else {
+      verdict = '<div class="verdict">Priced <b>' + pct(bk.settleRate) + "</b> on " +
+        moneyExact(bk.allocated) + " of par, " + (bk.bookElig / target).toFixed(2) +
+        "× subscribed. " + filled.length + " accounts filled; " +
+        rows.filter(function (r) { return r.status === "rej"; }).length +
+        " bid above the clearing rate and got nothing. Aggressive bidders down to " +
+        pct(bk.eligible.length ? bk.eligible[0].rate : bk.settleRate) +
+        " still receive the full " + pct(bk.settleRate) + " — that is the single-price rule at work.</div>";
+    }
+
+    var table =
+      '<div class="tbl-scroll"><table><thead><tr>' +
+        "<th>Investor</th><th>Type</th><th class=\"r\">Bid rate</th>" +
+        "<th class=\"r\">Order</th><th class=\"r\">Allocated</th>" +
+        "<th class=\"r\">Fill</th><th>Status</th>" +
+      "</tr></thead><tbody>" +
+      rows.map(function (r) {
+        var b = r.bid;
+        var lbl = { full: "Filled", part: "Pro-rata", rej: "No fill", inel: "Ineligible" }[r.status];
+        return '<tr class="' + (r.alloc > 0 ? "" : "rejected") + '">' +
+          '<td class="nm">' + b.name + (b.revises ? '<span class="revtag">Revised</span>' : "") + "</td>" +
+          "<td>" + b.kind + "</td>" +
+          '<td class="r mono">' + pct(b.rate) + "</td>" +
+          '<td class="r mono">' + money(b.size) + "</td>" +
+          '<td class="r mono">' + (r.alloc > 0 ? money(r.alloc) : "—") + "</td>" +
+          '<td class="r mono">' + (r.alloc > 0 ? (r.alloc / b.size * 100).toFixed(0) + "%" : "—") + "</td>" +
+          '<td><span class="stat ' + r.status + '">' + lbl + "</span></td></tr>";
+      }).join("") +
+      "</tbody></table></div>";
+
+    el.allocHost.innerHTML = summary + verdict + table;
+  }
+  function cell(lab, v, sub, pos) {
+    return '<div class="res-cell"><span class="lab">' + lab + "</span>" +
+      '<span class="v' + (pos ? " pos" : "") + '">' + v + "</span>" +
+      '<span class="sub">' + sub + "</span></div>";
+  }
+
+  /* ---------- master repaint ---------- */
+  function repaint(final) {
+    var bk = priceBook();
+    paintStats(bk);
+    paintLadder(bk);
+    paintInvestors(bk);
+    if (bk.bookAll > 0) paintAllocations(bk, final);
+    return bk;
+  }
+
+  /* ================= run loop ================= */
+  function frame(ts) {
+    if (state.phase !== "running") return;
+    if (!state.lastFrame) state.lastFrame = ts;
+    var dt = (ts - state.lastFrame) * state.speed;
+    state.lastFrame = ts;
+    state.elapsed = Math.min(TOTAL_MS, state.elapsed + dt);
+
+    var added = false;
+    while (state.cursor < state.bids.length && state.bids[state.cursor].t <= state.elapsed) {
+      var b = state.bids[state.cursor++];
+      if (b.revises && state.byId[b.revises]) state.byId[b.revises].superseded = true;
+      state.byId[b.id] = b;
+      state.live.push(b);
+      pushTape(b);
+      added = true;
+    }
+
+    var p = state.elapsed / TOTAL_MS;
+    var c = saleClock(p);
+    el.day.textContent = "Order day " + c.day + " of 3";
+    el.clock.textContent = c.label + "  ·  " + padz(Math.floor(state.elapsed / 1000)) + "s / 90s";
+    paintTimeline(p);
+    el.tapeNote.textContent = state.live.filter(function (x) { return !x.superseded; }).length + " live orders";
+
+    if (added || Math.floor(state.elapsed / 120) !== Math.floor((state.elapsed - dt) / 120)) repaint(false);
+
+    if (state.elapsed >= TOTAL_MS) return finish();
+    state.raf = requestAnimationFrame(frame);
+  }
+
+  function finish() {
+    state.phase = "done";
+    cancelAnimationFrame(state.raf);
+    el.day.textContent = "Order period closed";
+    el.clock.textContent = "5:00 PM  ·  90s / 90s";
+    paintTimeline(1);
+    var bk = repaint(true);
+    el.allocNote.textContent = bk.covered
+      ? "Final — priced at " + pct(bk.clearing)
+      : "Final — undersubscribed";
+    el.tapeNote.textContent = "Book closed · " + bk.orders + " orders";
+    el.run.textContent = "▶ Run again";
+    el.run.disabled = false;
+    el.pause.disabled = true;
+    el.pause.textContent = "Pause";
+    el.reset.disabled = false;
+    setTermsEnabled(true);
+  }
+
+  function start() {
+    readTerms();
+    state.phase = "running";
+    state.bids = makeBids();
+    state.cursor = 0; state.live = []; state.byId = {};
+    state.elapsed = 0; state.lastFrame = 0;
+    lastClearingShown = null; lastScaleMax = 0;
+    el.tape.innerHTML = "";
+    buildLadder();
+    el.run.disabled = true;
+    el.run.textContent = "● Live";
+    el.pause.disabled = false;
+    el.reset.disabled = false;
+    setTermsEnabled(false);
+    el.allocNote.textContent = "Order period open";
+    state.raf = requestAnimationFrame(frame);
+  }
+
+  function reset() {
+    cancelAnimationFrame(state.raf);
+    state.phase = "idle";
+    state.bids = []; state.live = []; state.byId = {}; state.cursor = 0; state.elapsed = 0;
+    lastClearingShown = null; lastScaleMax = 0;
+    readTerms();
+    buildLadder();
+    var bk = priceBook();
+    paintStats(bk); paintLadder(bk);
+    el.tape.innerHTML = '<div class="empty">Press “Simulate run” to open the order period</div>';
+    el.invHost.innerHTML = '<div class="empty">No orders yet</div>';
+    el.invNote.textContent = "Top 12 by par";
+    el.tapeNote.textContent = "Idle";
+    el.allocNote.textContent = "Pending pricing";
+    el.allocHost.innerHTML = IDLE_HTML;
+    el.day.textContent = "Order period closed";
+    el.clock.textContent = "—:— &nbsp;·&nbsp; 00:00";
+    el.clock.innerHTML = "—:—  ·  00:00";
+    paintTimeline(0);
+    el.run.disabled = false; el.run.textContent = "▶ Simulate run";
+    el.pause.disabled = true; el.pause.textContent = "Pause";
+    el.reset.disabled = true;
+    setTermsEnabled(true);
+  }
+
+  var IDLE_HTML = el.allocHost.innerHTML;
+
+  /* ================= terms ================= */
+  function setTermsEnabled(on) {
+    el.targetIn.disabled = !on;
+    el.reserveIn.disabled = !on;
+  }
+  function readTerms() {
+    var t = parseFloat(String(el.targetIn.value).replace(/[^0-9.]/g, ""));
+    if (isFinite(t) && t >= 1e7) target = Math.round(t / LOT) * LOT;
+    el.targetIn.value = Math.round(target).toLocaleString("en-US");
+
+    var r = parseFloat(String(el.reserveIn.value).replace(/[^0-9.]/g, ""));
+    if (isFinite(r) && r >= 1 && r <= 12) reserve = Math.round(r / STEP) * STEP;
+    el.reserveIn.value = reserve.toFixed(2);
+
+    el.targetFoot.textContent = "30-yr revenue bond · " + Math.round(target / LOT).toLocaleString("en-US") + " lots";
+    el.goalRule.style.setProperty("--g", money(target));
+    // keep the goal-rule caption in sync with the edited target
+    var css = document.getElementById("goalCss");
+    if (!css) { css = document.createElement("style"); css.id = "goalCss"; document.head.appendChild(css); }
+    css.textContent = '.goal-rule::before{content:"' + money(target) + ' TARGET";}';
+  }
+
+  el.targetIn.addEventListener("change", function () { readTerms(); reset(); });
+  el.reserveIn.addEventListener("change", function () { readTerms(); reset(); });
+
+  /* ================= controls ================= */
+  el.run.addEventListener("click", function () {
+    if (state.phase === "running") return;
+    start();
+  });
+  el.pause.addEventListener("click", function () {
+    if (state.phase === "running") {
+      state.phase = "paused";
+      cancelAnimationFrame(state.raf);
+      el.pause.textContent = "Resume";
+      el.run.textContent = "‖ Paused";
+    } else if (state.phase === "paused") {
+      state.phase = "running";
+      state.lastFrame = 0;
+      el.pause.textContent = "Pause";
+      el.run.textContent = "● Live";
+      state.raf = requestAnimationFrame(frame);
+    }
+  });
+  var SPEEDS = [1, 2, 4];
+  var spIdx = 0;
+  el.speed.addEventListener("click", function () {
+    spIdx = (spIdx + 1) % SPEEDS.length;
+    state.speed = SPEEDS[spIdx];
+    el.speed.textContent = state.speed + "×";
+  });
+  el.reset.addEventListener("click", reset);
+
+  var themeBtn = $("themeBtn");
+  themeBtn.addEventListener("click", function () {
+    var root = document.documentElement;
+    var dark = root.getAttribute("data-theme") === "dark";
+    if (!root.getAttribute("data-theme")) {
+      dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    }
+    root.setAttribute("data-theme", dark ? "light" : "dark");
+  });
+
+  /* ================= init ================= */
+  buildTimeline();
+  readTerms();
+  buildLadder();
+  paintTimeline(0);
+  (function () {
+    var bk = priceBook();
+    paintStats(bk);
+    paintLadder(bk);
+  })();
+})();
+</script>
+</body>
+</html>
