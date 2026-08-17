@@ -50,7 +50,7 @@
       --navy:      #5C8AD9;
       --blue:      #4C82FF;
       --blue-2:    #86AEFF;
-      --blue-wash: #1B2C4E;
+      --blue-wash: #24406F;
       --line:      #33486F;
       --line-soft: #24365A;
       --good:      #35B98A;
@@ -69,7 +69,7 @@
     --navy:      #5C8AD9;
     --blue:      #4C82FF;
     --blue-2:    #86AEFF;
-    --blue-wash: #1B2C4E;
+    --blue-wash: #24406F;
     --line:      #33486F;
     --line-soft: #24365A;
     --good:      #35B98A;
@@ -115,11 +115,76 @@
   .wrap {
     max-width: 1480px;
     margin: 0 auto;
-    padding: 18px 22px 60px;
+    padding: 26px 26px 72px;
     display: flex;
     flex-direction: column;
-    gap: 18px;
+    gap: 30px;
   }
+
+  /* ---------- explainer tooltips ---------- */
+  button.info {
+    width: 15px; height: 15px; flex: none; padding: 0; margin: 0;
+    background: transparent; color: var(--muted);
+    border: 1.5px solid var(--line-soft); box-shadow: none;
+    font-family: var(--f-mono); font-size: 10px; font-weight: 700;
+    line-height: 1; letter-spacing: 0; text-transform: none;
+    display: inline-flex; align-items: center; justify-content: center;
+    cursor: help; transition: none;
+  }
+  button.info:hover { background: var(--blue); color: #FFF; border-color: var(--blue); transform: none; box-shadow: none; }
+  .tile.hero button.info { color: #CFDEFC; border-color: #7FA6F0; }
+  .tile.hero button.info:hover { background: #FFF; color: var(--blue); border-color: #FFF; }
+  .tile.hero.pending button.info { color: var(--muted); border-color: var(--line-soft); }
+  .tile.hero.pending button.info:hover { background: var(--blue); color: #FFF; border-color: var(--blue); }
+  .runbtn[data-tip], .ghost[data-tip] { cursor: pointer; }
+  button.info:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+  .lab.with-i { display: inline-flex; align-items: center; gap: 6px; }
+  .panel-hd .hd-l { display: flex; align-items: center; gap: 8px; min-width: 0; }
+
+  #tip {
+    position: fixed; left: 0; top: 0; z-index: 90; max-width: 340px;
+    background: var(--panel); color: var(--ink);
+    border: var(--lw) solid var(--line);
+    box-shadow: 5px 5px 0 var(--shadow);
+    padding: 11px 13px 12px;
+    font-size: 12.5px; line-height: 1.5;
+    pointer-events: none; opacity: 0; visibility: hidden;
+    transform: translateY(3px);
+    transition: opacity .12s ease-out, transform .12s ease-out;
+  }
+  #tip.on { opacity: 1; visibility: visible; transform: none; }
+  #tip .th {
+    font-family: var(--f-mono); font-size: 9.5px; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--muted); font-weight: 700;
+    padding-bottom: 5px; margin-bottom: 7px; border-bottom: 1px solid var(--line-soft);
+    display: flex; justify-content: space-between; gap: 12px;
+  }
+  #tip .th b { color: var(--blue); font-weight: 700; }
+  #tip .kv { display: flex; justify-content: space-between; gap: 14px; }
+  #tip .kv span:first-child { color: var(--muted); }
+  #tip .kv span:last-child { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+  #tip .who {
+    margin-top: 8px; padding-top: 7px; border-top: 1px solid var(--line-soft);
+    display: flex; flex-direction: column; gap: 3px;
+  }
+  #tip .who .w {
+    display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 12px;
+    font-size: 12px; align-items: baseline;
+  }
+  #tip .who .w b { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #tip .who .w i {
+    font-style: normal; font-family: var(--f-mono);
+    font-variant-numeric: tabular-nums; color: var(--ink-soft);
+  }
+  #tip .more { font-family: var(--f-mono); font-size: 10px; color: var(--muted); letter-spacing: .06em; margin-top: 3px; }
+  #tip .verd {
+    margin-top: 8px; font-family: var(--f-mono); font-size: 9.5px; font-weight: 700;
+    letter-spacing: .1em; text-transform: uppercase;
+  }
+  #tip .verd.fill { color: var(--good); }
+  #tip .verd.clear { color: var(--blue); }
+  #tip .verd.no { color: var(--muted); }
+  #tip .verd.inel { color: var(--bad); }
 
   /* ---------- primitives ---------- */
   .box {
@@ -243,8 +308,8 @@
   .tl-day.live .txt .st { color: var(--blue); }
 
   /* ---------- stat tiles ---------- */
-  .tiles { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; }
-  .tile { padding: 11px 13px 12px; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+  .tiles { display: grid; grid-template-columns: repeat(5, 1fr); gap: 18px; }
+  .tile { padding: 13px 15px 14px; display: flex; flex-direction: column; gap: 5px; min-width: 0; }
   .tile .v {
     font-family: var(--f-mono); font-variant-numeric: tabular-nums;
     font-size: clamp(19px, 2vw, 26px); font-weight: 500; line-height: 1.05;
@@ -273,7 +338,7 @@
   .termin:disabled { border-bottom-color: transparent; color: var(--ink); }
 
   /* ---------- subscription meter ---------- */
-  .meter-box { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 9px; }
+  .meter-box { padding: 15px 16px 17px; display: flex; flex-direction: column; gap: 11px; }
   .meter-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
   .meter {
     position: relative; height: 34px;
@@ -294,12 +359,13 @@
   }
 
   /* ---------- 2-col grids ---------- */
-  .grid-main { display: grid; grid-template-columns: minmax(0,1.32fr) minmax(0,1fr); gap: 18px; align-items: start; }
-  .grid-tail { display: grid; grid-template-columns: minmax(0,1.32fr) minmax(0,1fr); gap: 18px; align-items: start; }
+  .grid-main { display: grid; grid-template-columns: minmax(0,1.32fr) minmax(0,1fr); gap: 26px; align-items: start; }
+  .grid-tail { display: grid; grid-template-columns: minmax(0,1.32fr) minmax(0,1fr); gap: 26px; align-items: start; }
 
   .panel-hd {
-    display: flex; justify-content: space-between; align-items: center; gap: 12px;
-    padding: 9px 13px 10px;
+    display: flex; justify-content: space-between; align-items: center; gap: 14px;
+    min-height: 42px;
+    padding: 10px 15px 11px;
     border-bottom: var(--lw) solid var(--line);
     background: var(--paper-2);
   }
@@ -307,28 +373,59 @@
   .panel-hd .note { font-family: var(--f-mono); font-size: 9.5px; letter-spacing: .1em; color: var(--muted); text-transform: uppercase; }
 
   /* ---------- ladder ---------- */
-  .ladder-body { padding: 12px 13px 6px; }
-  .lad-scale { position: relative; height: 16px; margin: 0 0 6px; }
-  .lad-scale .zone { position: absolute; left: 58px; right: 78px; top: 0; height: 100%; }
+  .ladder-body { padding: 15px 16px 10px; }
+
+  /* the x-axis is cumulative, so it gets an explicit title — the target is one
+     point on that axis, not a threshold that applies to each rate row */
+  .lad-axis-title {
+    display: flex; align-items: center; gap: 7px;
+    margin: 0 0 11px; padding-left: 62px;
+  }
+  .lad-axis-title .arrow { color: var(--line-soft); font-size: 11px; }
+
+  .lad-scale { position: relative; height: 44px; margin: 0; }
+  .lad-scale .zone { position: absolute; left: 62px; right: 82px; top: 0; height: 100%; }
   .lad-scale .tick {
-    position: absolute; top: 0; transform: translateX(-50%);
+    position: absolute; bottom: 0;
     font-family: var(--f-mono); font-size: 9px; color: var(--muted); letter-spacing: .06em;
-    white-space: nowrap;
+    white-space: nowrap; padding-bottom: 3px;
   }
-  .lad-rows { position: relative; display: flex; flex-direction: column; }
-  .lad-overlay { position: absolute; left: 58px; right: 78px; top: 0; bottom: 0; pointer-events: none; z-index: 5; }
-  .goal-rule { position: absolute; top: -4px; bottom: -4px; border-left: var(--lw-thick) solid var(--ink); }
-  .goal-rule::before {
-    content: "$500M TARGET"; position: absolute; top: -1px; left: 5px;
+  .lad-scale .tick.mid { transform: translateX(-50%); }
+  .lad-scale .tick.last { transform: translateX(-100%); }
+  /* the flag sits on its own line above the tick labels so the two never collide */
+  .goal-flag {
+    position: absolute; top: 0; z-index: 3;
+    transform: translateX(-50%);
     font-family: var(--f-mono); font-size: 9px; font-weight: 700; letter-spacing: .1em;
-    background: var(--ink); color: var(--panel); padding: 2px 4px; white-space: nowrap;
+    background: var(--ink); color: var(--panel); padding: 3px 6px 4px;
+    white-space: nowrap; text-transform: uppercase;
   }
-  .res-rule { position: absolute; left: 0; right: 0; border-top: var(--lw) dashed var(--bad); }
+  .goal-flag::after {
+    content: ""; position: absolute; left: 50%; top: 100%;
+    border-left: 5px solid transparent; border-right: 5px solid transparent;
+    border-top: 6px solid var(--ink); transform: translateX(-50%);
+  }
+
+  .lad-rows { position: relative; display: flex; flex-direction: column; }
+  .lad-overlay { position: absolute; left: 62px; right: 82px; top: 0; bottom: 0; pointer-events: none; z-index: 5; }
+  .axis-line { position: absolute; left: 0; top: -3px; bottom: -3px; border-left: 1px solid var(--line-soft); }
+  /* dashed, unlabelled: a landmark on the cumulative axis */
+  .goal-rule { position: absolute; top: -3px; bottom: -3px; border-left: var(--lw) dashed var(--ink); }
+  .cross-dot {
+    position: absolute; width: 11px; height: 11px; margin: -5.5px 0 0 -5.5px;
+    background: var(--blue); border: var(--lw) solid var(--panel);
+    box-shadow: 0 0 0 2px var(--ink); display: none;
+  }
+  .cross-dot.on { display: block; }
 
   .lad-row {
-    display: grid; grid-template-columns: 58px minmax(0,1fr) 78px;
-    align-items: center; height: 21px; position: relative;
+    display: grid; grid-template-columns: 62px minmax(0,1fr) 82px;
+    align-items: center; height: 22px; position: relative; cursor: crosshair;
   }
+  /* distinct from --blue-wash, which the cumulative bar uses — otherwise the bar
+     disappears into the highlight on the row being hovered */
+  .lad-row:hover, .lad-row.hot { background: var(--paper-2); }
+  .lad-row.hot .r-rate { color: var(--blue); font-weight: 700; }
   .lad-row .r-rate {
     font-family: var(--f-mono); font-variant-numeric: tabular-nums;
     font-size: 11px; color: var(--ink-soft); text-align: right; padding-right: 9px;
@@ -337,7 +434,7 @@
     font-family: var(--f-mono); font-variant-numeric: tabular-nums;
     font-size: 10.5px; color: var(--muted); text-align: right; padding-left: 8px;
   }
-  .r-track { position: relative; height: 14px; border-left: 1px solid var(--line-soft); }
+  .r-track { position: relative; height: 14px; }
   .r-track::before {
     content: ""; position: absolute; left: 0; right: 0; top: 50%;
     border-top: 1px dotted var(--line-soft);
@@ -358,26 +455,27 @@
     content: ""; position: absolute; inset: -1px 0; border: var(--lw) solid var(--blue); pointer-events: none;
   }
   .lad-row.marker .clears {
-    position: absolute; right: 82px; top: 2px; z-index: 6;
+    position: absolute; right: 86px; top: 3px; z-index: 6;
     font-family: var(--f-mono); font-size: 8.5px; font-weight: 700; letter-spacing: .1em;
     background: var(--blue); color: #FFF; padding: 1px 5px 2px; white-space: nowrap;
   }
   .lad-row.decade .r-rate { font-weight: 700; color: var(--ink); }
 
-  .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; padding: 10px 13px 12px; border-top: var(--lw) solid var(--line); }
+  .legend { display: flex; flex-wrap: wrap; gap: 8px 20px; padding: 12px 16px 14px; border-top: var(--lw) solid var(--line); }
   .lg { display: flex; align-items: center; gap: 6px; font-family: var(--f-mono); font-size: 9.5px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
   .sw { width: 15px; height: 10px; border: 1px solid var(--line); flex: none; }
   .sw.a { background: var(--blue); }
   .sw.b { background: var(--blue-wash); }
   .sw.c { background: var(--muted); opacity: .55; }
   .sw.d { background: var(--bad); opacity: .5; background-image: repeating-linear-gradient(135deg, transparent 0 3px, var(--panel) 3px 4px); }
+  .sw.e { background: var(--blue); box-shadow: 0 0 0 1.5px var(--ink) inset; width: 10px; height: 10px; }
 
   /* ---------- tape ---------- */
   .tape { max-height: 508px; overflow: hidden; }
   .tape-row {
     display: grid; grid-template-columns: 52px minmax(0,1fr) 74px 56px;
     gap: 8px; align-items: center;
-    padding: 7px 12px; border-bottom: 1px solid var(--line-soft);
+    padding: 8px 15px; border-bottom: 1px solid var(--line-soft);
   }
   .tape-row.in { animation: slidein .32s cubic-bezier(.2,.7,.3,1); }
   @keyframes slidein {
@@ -410,7 +508,7 @@
   /* ---------- investor list ---------- */
   .inv-row {
     display: grid; grid-template-columns: 20px minmax(0,1fr) 78px 62px;
-    gap: 9px; align-items: center; padding: 7px 12px;
+    gap: 10px; align-items: center; padding: 8px 15px;
     border-bottom: 1px solid var(--line-soft);
   }
   .inv-row .rk { font-family: var(--f-mono); font-size: 10px; color: var(--muted); }
@@ -427,10 +525,10 @@
     background: var(--paper-2); text-align: left;
     font-family: var(--f-mono); font-size: 9px; letter-spacing: .13em; text-transform: uppercase;
     color: var(--muted); font-weight: 700;
-    padding: 8px 12px; border-bottom: var(--lw) solid var(--line); white-space: nowrap;
+    padding: 9px 15px; border-bottom: var(--lw) solid var(--line); white-space: nowrap;
   }
   thead th.r, tbody td.r { text-align: right; }
-  tbody td { padding: 6px 12px; border-bottom: 1px solid var(--line-soft); white-space: nowrap; }
+  tbody td { padding: 7px 15px; border-bottom: 1px solid var(--line-soft); white-space: nowrap; }
   tbody td.nm { white-space: normal; font-weight: 600; }
   tbody td.mono { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
   tbody tr.rejected td { color: var(--muted); }
@@ -481,8 +579,11 @@
     .clock { text-align: left; }
     .ctrls { flex-wrap: wrap; }
     .tiles { grid-template-columns: 1fr; }
-    .lad-scale .zone, .lad-overlay { left: 48px; right: 60px; }
-    .lad-row { grid-template-columns: 48px minmax(0,1fr) 60px; }
+    .lad-scale .zone, .lad-overlay { left: 52px; right: 64px; }
+    .lad-axis-title { padding-left: 52px; }
+    .lad-row { grid-template-columns: 52px minmax(0,1fr) 64px; }
+    .lad-row.marker .clears { right: 68px; }
+    #tip { max-width: calc(100vw - 28px); }
     .res-grid { grid-template-columns: 1fr; }
     .res-cell { border-right: 0; }
   }
@@ -514,9 +615,9 @@
         <div class="tt num" id="clockLabel">—:— &nbsp;·&nbsp; 00:00</div>
       </div>
       <div class="ctrls">
-        <button class="runbtn" id="runBtn">▶ Simulate run</button>
-        <button class="ghost" id="pauseBtn" disabled>Pause</button>
-        <button class="ghost" id="speedBtn">1×</button>
+        <button class="runbtn" id="runBtn" data-tip-t="Simulate run" data-tip="Opens the order period and streams three days of institutional demand into the book over 90 seconds. Watch the clearing rate: it reads &ldquo;not covered&rdquo; until demand first reaches the target, then tightens downward as sharper orders arrive.">▶ Simulate run</button>
+        <button class="ghost" id="pauseBtn" disabled data-tip-t="Pause" data-tip="Freeze the order period to inspect the book mid-auction. Hovering the ladder while paused is the easiest way to see who sits at each rate.">Pause</button>
+        <button class="ghost" id="speedBtn" data-tip-t="Playback speed" data-tip="Run the 90-second order period at 1×, 2× or 4×. Pricing is unaffected — only how fast the clock advances.">1×</button>
         <button class="ghost" id="resetBtn" disabled>Reset</button>
         <button class="ghost" id="themeBtn" aria-label="Switch between light and dark">◐</button>
       </div>
@@ -524,32 +625,42 @@
   </header>
 
   <!-- ============ TIMELINE ============ -->
-  <div class="timeline" id="timeline"></div>
+  <div class="timeline" id="timeline" data-tip-t="Order period" data-tip="A three-day order period compressed into 90 seconds of playback. Institutional demand is deliberately back-loaded: day one is thin price discovery, and most real size arrives on day three once accounts can see where the book is heading."></div>
 
   <!-- ============ TILES ============ -->
   <section class="tiles">
     <div class="box tile">
-      <span class="lab">Target par amount ($)</span>
+      <span class="lab with-i">Target par amount ($)
+        <button type="button" class="info" data-tip-t="Target par amount" data-tip="How much the issuer is raising. Orders are stacked cheapest-first until this number is covered, and the rate that fills the very last bond prices the entire deal. Editable while the auction is idle &mdash; try lowering it to watch the deal clear at a sharper rate.">i</button>
+      </span>
       <input class="termin num" id="targetIn" type="text" value="500,000,000" inputmode="numeric" aria-label="Target par amount in dollars">
       <span class="foot" id="targetFoot">30-yr revenue bond</span>
     </div>
     <div class="box tile">
-      <span class="lab">Orders in book</span>
+      <span class="lab with-i">Orders in book
+        <button type="button" class="info" data-tip-t="Orders in book" data-tip="Total par investors have asked for across every order received, including orders above the reserve that can never be filled. An investor may place more than one order, and a revised order replaces the one it supersedes rather than adding to it.">i</button>
+      </span>
       <span class="v" id="bookV">$0</span>
       <span class="foot" id="bookFoot">0 orders · 0 investors</span>
     </div>
     <div class="box tile">
-      <span class="lab">Subscription</span>
+      <span class="lab with-i">Subscription
+        <button type="button" class="info" data-tip-t="Subscription" data-tip="Eligible demand divided by the target. Below 1.00&times; the deal is not covered and cannot price. Above it the deal is oversubscribed, and the surplus is what competes the clearing rate downward &mdash; every extra aggressive order pushes the last bond sold to a lower rate.">i</button>
+      </span>
       <span class="v" id="covV">0.00×</span>
       <span class="foot" id="covFoot">Awaiting orders</span>
     </div>
     <div class="box tile hero pending" id="clearTile">
-      <span class="lab">Clearing rate — all fills</span>
+      <span class="lab with-i">Clearing rate — all fills
+        <button type="button" class="info" data-tip-t="Clearing rate" data-tip="The rate that fills the last bond needed to reach the target. This is the single price: every winning investor receives this rate, even the ones who bid well below it. That is what makes bidding aggressively safe &mdash; it wins you an allocation without costing you yield.">i</button>
+      </span>
       <span class="v num" id="clearV">Not covered</span>
       <span class="foot" id="clearFoot">Every winning bid pays one rate</span>
     </div>
     <div class="box tile">
-      <span class="lab">Reserve rate — issuer cap (%)</span>
+      <span class="lab with-i">Reserve rate — issuer cap (%)
+        <button type="button" class="info" data-tip-t="Reserve rate" data-tip="The highest coupon the issuer is willing to pay. Bids above it are ineligible at any price, however large. If eligible demand never reaches the target, the sale prices at the reserve and closes undersubscribed &mdash; raise it to admit more expensive money, lower it to risk a failed deal.">i</button>
+      </span>
       <input class="termin num" id="reserveIn" type="text" value="4.60" inputmode="decimal" aria-label="Reserve rate, maximum coupon, in percent">
       <span class="foot">Bids above are ineligible</span>
     </div>
@@ -558,7 +669,9 @@
   <!-- ============ SUBSCRIPTION METER ============ -->
   <section class="box meter-box">
     <div class="meter-head">
-      <span class="lab">Capital committed vs. target</span>
+      <span class="lab with-i">Capital committed vs. target
+        <button type="button" class="info" data-tip-t="Capital committed" data-tip="Eligible demand measured against the target. The solid bar is the portion the issuer can actually use; the hatched section past the notch is oversubscription &mdash; demand that will go unfilled, but that does the work of pricing the deal down.">i</button>
+      </span>
       <span class="lab" id="meterRead">$0 of $500,000,000 · 0.0%</span>
     </div>
     <div class="meter">
@@ -573,28 +686,43 @@
 
     <div class="box">
       <div class="panel-hd">
-        <h2>Demand ladder — capital committed by rate</h2>
+        <div class="hd-l">
+          <h2>Demand ladder — capital committed by rate</h2>
+          <button type="button" class="info" data-tip-t="Demand ladder" data-tip="Each row is a 0.05% rate bucket. The solid blue bar is new demand arriving at that rate; the pale bar behind it is everything already committed at or below it. Together they trace a cumulative demand curve down the page. Hover any row to see exactly which investors are in it.">i</button>
+        </div>
         <span class="note" id="ladNote">Cumulative, ascending</span>
       </div>
       <div class="ladder-body">
+        <div class="lad-axis-title">
+          <span class="lab with-i">Cumulative capital committed at or below each rate
+            <button type="button" class="info" data-tip-t="Reading the ladder" data-tip="Every bar measures along one shared horizontal axis: total capital committed at or below that row&rsquo;s rate. So the bars only grow as you move down, and the dashed $500M mark is a single point on that axis &mdash; the moment cumulative demand covers the whole deal &mdash; not a target each rate has to hit on its own.">i</button>
+          </span>
+          <span class="arrow">&#9654;</span>
+        </div>
         <div class="lad-scale"><div class="zone" id="ladTicks"></div></div>
         <div class="lad-rows" id="ladRows">
           <div class="lad-overlay" id="ladOverlay">
+            <div class="axis-line"></div>
             <div class="goal-rule" id="goalRule" style="left:100%"></div>
+            <div class="cross-dot" id="crossDot"></div>
           </div>
         </div>
       </div>
       <div class="legend">
-        <span class="lg"><i class="sw a"></i>New demand at this rate</span>
-        <span class="lg"><i class="sw b"></i>Cumulative at or below</span>
-        <span class="lg"><i class="sw c"></i>Above clearing — no fill</span>
-        <span class="lg"><i class="sw d"></i>Above reserve — ineligible</span>
+        <span class="lg" data-tip-t="New demand" data-tip="Par committed by orders arriving at exactly this rate — the step the cumulative curve takes at this row."><i class="sw a"></i>New demand at this rate</span>
+        <span class="lg" data-tip-t="Cumulative" data-tip="Everything committed at this rate or any lower rate. This is what the dashed target mark is measured against."><i class="sw b"></i>Cumulative at or below</span>
+        <span class="lg" data-tip-t="Above clearing" data-tip="These orders were outbid. The target was already covered by cheaper money before the stack reached them, so they receive nothing."><i class="sw c"></i>Above clearing — no fill</span>
+        <span class="lg" data-tip-t="Above reserve" data-tip="These orders exceed the issuer&rsquo;s coupon cap and are disqualified outright — they never enter the cumulative stack at all."><i class="sw d"></i>Above reserve — ineligible</span>
+        <span class="lg" data-tip-t="Crossing point" data-tip="The blue marker sits where the cumulative curve crosses the target. Its row is the clearing rate."><i class="sw e"></i>Where demand covers the target</span>
       </div>
     </div>
 
     <div class="box">
       <div class="panel-hd">
-        <h2>Live order flow</h2>
+        <div class="hd-l">
+          <h2>Live order flow</h2>
+          <button type="button" class="info" data-tip-t="Live order flow" data-tip="Orders as they arrive, newest first. Each investor names a rate they require and a par amount in $100,000 increments. Flow is deliberately back-loaded across the three days, the way a real order period fills &mdash; and some accounts revise their rate down late on day three to protect an allocation they now expect to lose.">i</button>
+        </div>
         <span class="note" id="tapeNote">Idle</span>
       </div>
       <div class="tape" id="tape">
@@ -609,7 +737,10 @@
 
     <div class="box">
       <div class="panel-hd">
-        <h2>Allocations at the clearing rate</h2>
+        <div class="hd-l">
+          <h2>Allocations at the clearing rate</h2>
+          <button type="button" class="info" data-tip-t="Allocations" data-tip="Who actually gets bonds. Orders below the clearing rate fill in full. Orders sitting exactly at the clearing rate share whatever par is left, pro-rated and rounded down to whole $100,000 lots &mdash; which is why par sold can land just under the target. Orders above the clearing rate get nothing, and every fill pays the clearing rate regardless of what it bid.">i</button>
+        </div>
         <span class="note" id="allocNote">Pending pricing</span>
       </div>
       <div id="allocHost">
@@ -628,7 +759,10 @@
 
     <div class="box">
       <div class="panel-hd">
-        <h2>Book by investor</h2>
+        <div class="hd-l">
+          <h2>Book by investor</h2>
+          <button type="button" class="info" data-tip-t="Book by investor" data-tip="Aggregate par requested per investor, largest first, updating live as orders land. Size here is demand, not an allocation &mdash; a large order placed at an uncompetitive rate still ends up with nothing.">i</button>
+        </div>
         <span class="note" id="invNote">Top 12 by par</span>
       </div>
       <div id="invHost"><div class="empty">No orders yet</div></div>
@@ -643,6 +777,8 @@
   </p>
 
 </div>
+
+<div id="tip" role="tooltip" aria-hidden="true"></div>
 
 <script>
 (function () {
@@ -872,17 +1008,29 @@
       allocations.push({ bid: b, alloc: 0, status: "inel" });
     });
 
-    // rate ladder buckets
-    var buckets = {}, order = [];
+    // rate ladder buckets, with the orders behind each one kept for hover detail
+    var buckets = {}, bucketBids = {}, order = [];
     for (var r = LAD_LO; r <= LAD_HI + 1e-9; r += STEP) {
       var key = bucketOf(r).toFixed(2);
-      buckets[key] = 0; order.push(key);
+      buckets[key] = 0; bucketBids[key] = []; order.push(key);
     }
     state.live.forEach(function (b) {
       if (b.superseded) return;
       var key = bucketOf(Math.max(LAD_LO, Math.min(LAD_HI, b.rate))).toFixed(2);
-      if (buckets[key] === undefined) buckets[key] = 0;
+      if (buckets[key] === undefined) { buckets[key] = 0; bucketBids[key] = []; }
       buckets[key] += b.size;
+      bucketBids[key].push(b);
+    });
+    Object.keys(bucketBids).forEach(function (k) {
+      bucketBids[k].sort(function (a, b) { return b.size - a.size; });
+    });
+
+    // running cumulative per bucket, so hover can report it without recomputing
+    var cumAt = {}, running = 0;
+    order.forEach(function (key) {
+      if (parseFloat(key) > reserve + 1e-9) { cumAt[key] = running; return; }
+      running += buckets[key] || 0;
+      cumAt[key] = running;
     });
 
     var names = {};
@@ -893,7 +1041,7 @@
       covered: covered, clearing: clearing, settleRate: settleRate,
       allocations: allocations, allocated: allocated,
       proRata: ratio, atTierPar: atTierPar,
-      buckets: buckets, order: order,
+      buckets: buckets, bucketBids: bucketBids, cumAt: cumAt, order: order,
       orders: state.live.filter(function (b) { return !b.superseded; }).length,
       investors: Object.keys(names).length,
       eligible: eligible
@@ -913,7 +1061,7 @@
     reserveIn: $("reserveIn"),
     meterRead: $("meterRead"), mFill: $("mFill"), mOver: $("mOver"), mNotch: $("mNotch"),
     ladTicks: $("ladTicks"), ladRows: $("ladRows"), ladOverlay: $("ladOverlay"),
-    goalRule: $("goalRule"), ladNote: $("ladNote"),
+    goalRule: $("goalRule"), crossDot: $("crossDot"), ladNote: $("ladNote"), tip: $("tip"),
     tape: $("tape"), tapeNote: $("tapeNote"),
     allocHost: $("allocHost"), allocNote: $("allocNote"),
     invHost: $("invHost"), invNote: $("invNote")
@@ -948,16 +1096,7 @@
   /* ---------- ladder shell ---------- */
   var ladRowNodes = {};
   function buildLadder() {
-    // ticks
-    el.ladTicks.innerHTML = "";
-    var scaleMax = ladScaleMax();
-    [0, 0.25, 0.5, 0.75, 1].forEach(function (f) {
-      var t = document.createElement("span");
-      t.className = "tick";
-      t.style.left = (f * 100) + "%";
-      t.textContent = money(scaleMax * f).replace("$0", "$0");
-      el.ladTicks.appendChild(t);
-    });
+    paintTicks();
 
     // rows (rebuilt only when the rate range changes)
     Array.prototype.slice.call(el.ladRows.querySelectorAll(".lad-row")).forEach(function (n) { n.remove(); });
@@ -966,6 +1105,7 @@
       var key = bucketOf(r).toFixed(2);
       var row = document.createElement("div");
       row.className = "lad-row" + (Math.abs(bucketOf(r) * 100 % 25) < 0.01 ? " decade" : "");
+      row.setAttribute("data-rate", key);
       row.innerHTML =
         '<div class="r-rate">' + key + '%</div>' +
         '<div class="r-track"><div class="r-cum"></div><div class="r-inc"></div></div>' +
@@ -974,10 +1114,24 @@
       ladRowNodes[key] = row;
     }
   }
+
   var lastScaleMax = 0;
-  function ladScaleMax() {
-    var m = Math.max(target * 1.25, lastScaleMax);
-    return m;
+  function paintTicks() {
+    var scaleMax = lastScaleMax || Math.ceil(target * 1.25 / 5e7) * 5e7;
+    el.ladTicks.innerHTML = "";
+    [0, 0.25, 0.5, 0.75, 1].forEach(function (f, i) {
+      var t = document.createElement("span");
+      t.className = "tick" + (i === 0 ? " first" : (f === 1 ? " last" : " mid"));
+      t.style.left = (f * 100) + "%";
+      t.textContent = f === 0 ? "$0" : money(scaleMax * f).replace(".0M", "M");
+      el.ladTicks.appendChild(t);
+    });
+    // the target is one point on the cumulative axis; flag it up here, not across the rows
+    var flag = document.createElement("span");
+    flag.className = "goal-flag";
+    flag.style.left = Math.min(100, target / scaleMax * 100) + "%";
+    flag.textContent = money(target).replace(".0M", "M") + " target";
+    el.ladTicks.appendChild(flag);
   }
 
   function paintLadder(bk) {
@@ -985,21 +1139,13 @@
     var want = Math.max(target * 1.25, totalAll * 1.04);
     if (want > lastScaleMax * 1.0001 || lastScaleMax === 0) {
       lastScaleMax = Math.ceil(want / 5e7) * 5e7;
-      // repaint ticks against the new scale
-      el.ladTicks.innerHTML = "";
-      [0, 0.25, 0.5, 0.75, 1].forEach(function (f) {
-        var t = document.createElement("span");
-        t.className = "tick"; t.style.left = (f * 100) + "%";
-        t.textContent = f === 0 ? "$0" : money(lastScaleMax * f).replace(".0M", "M");
-        el.ladTicks.appendChild(t);
-      });
+      paintTicks();
     }
     var scale = lastScaleMax;
 
     el.goalRule.style.left = Math.min(100, target / scale * 100) + "%";
-    el.goalRule.setAttribute("data-lbl", money(target));
 
-    var cum = 0;
+    var cum = 0, markerRow = null;
     bk.order.forEach(function (key) {
       var row = ladRowNodes[key];
       if (!row) return;
@@ -1013,7 +1159,8 @@
       if (Math.abs(rate * 100 % 25) < 0.01) cls += " decade";
       if (isInelig) cls += " inelig";
       else if (bk.covered && rate > bk.clearing + 1e-9) cls += " above";
-      if (bk.covered && Math.abs(rate - bk.clearing) < 1e-9) cls += " marker";
+      if (bk.covered && Math.abs(rate - bk.clearing) < 1e-9) { cls += " marker"; markerRow = row; }
+      if (key === hotKey) cls += " hot";
       row.className = cls;
 
       var cumBar = row.querySelector(".r-cum");
@@ -1037,6 +1184,16 @@
         tag.textContent = "Clears here";
       } else if (tag) tag.remove();
     });
+
+    // pin the crossing marker where the cumulative curve meets the target
+    if (markerRow) {
+      el.crossDot.classList.add("on");
+      el.crossDot.style.left = Math.min(100, target / scale * 100) + "%";
+      // overlay origin sits 3px above .lad-rows, so correct for its inset
+      el.crossDot.style.top = (markerRow.offsetTop + markerRow.offsetHeight / 2 + 3) + "px";
+    } else {
+      el.crossDot.classList.remove("on");
+    }
 
     el.ladNote.textContent = bk.covered
       ? "Clears at " + pct(bk.clearing)
@@ -1203,13 +1360,138 @@
       '<span class="sub">' + sub + "</span></div>";
   }
 
+  /* ================= tooltips ================= */
+  var hotKey = null;      // ladder row currently hovered
+  var lastBook = null;    // most recent priced book, for hover detail
+  var tipAnchor = null;
+
+  function placeTip(rect) {
+    var t = el.tip;
+    t.classList.add("on");
+    t.setAttribute("aria-hidden", "false");
+    var tw = t.offsetWidth, th = t.offsetHeight;
+    var left = rect.left + rect.width / 2 - tw / 2;
+    left = Math.max(10, Math.min(window.innerWidth - tw - 10, left));
+    var top = rect.top - th - 11;
+    if (top < 10) top = rect.bottom + 11;
+    t.style.left = left + "px";
+    t.style.top = top + "px";
+  }
+  function hideTip() {
+    el.tip.classList.remove("on");
+    el.tip.setAttribute("aria-hidden", "true");
+    tipAnchor = null;
+    if (hotKey) {
+      var prev = ladRowNodes[hotKey];
+      if (prev) prev.classList.remove("hot");
+      hotKey = null;
+    }
+  }
+  function showStaticTip(node) {
+    var title = node.getAttribute("data-tip-t");
+    el.tip.innerHTML = (title ? '<div class="th"><span>' + title + "</span></div>" : "") +
+      "<div>" + node.getAttribute("data-tip") + "</div>";
+    tipAnchor = node;
+    placeTip(node.getBoundingClientRect());
+  }
+
+  /* ---------- per-rate hover detail ---------- */
+  function ladderTipHtml(key) {
+    var bk = lastBook;
+    if (!bk) return null;
+    var rate = parseFloat(key);
+    var inc = bk.buckets[key] || 0;
+    var bids = bk.bucketBids[key] || [];
+    var cum = bk.cumAt[key] || 0;
+    var inelig = rate > reserve + 1e-9;
+
+    var head = '<div class="th"><span>Bids at <b>' + key + "%</b></span><span>" +
+      (bids.length ? bids.length + (bids.length === 1 ? " order" : " orders") : "no orders") + "</span></div>";
+
+    var body = '<div class="kv"><span>New demand here</span><span>' +
+      (inc ? moneyExact(inc) : "—") + "</span></div>";
+    if (!inelig) {
+      body += '<div class="kv"><span>Cumulative at or below</span><span>' + moneyExact(cum) + "</span></div>" +
+        '<div class="kv"><span>Share of target</span><span>' + (cum / target * 100).toFixed(1) + "%</span></div>";
+    }
+
+    var verd;
+    if (inelig) verd = '<div class="verd inel">Above the ' + pct(reserve) + " reserve — ineligible</div>";
+    else if (!bk.covered) verd = '<div class="verd no">Book not yet covered</div>';
+    else if (Math.abs(rate - bk.clearing) < 1e-9) verd = '<div class="verd clear">Clears here — pro-rata ' + (bk.proRata * 100).toFixed(1) + "%</div>";
+    else if (rate < bk.clearing) verd = '<div class="verd fill">Fills in full at ' + pct(bk.clearing) + "</div>";
+    else verd = '<div class="verd no">Above clearing — no fill</div>';
+
+    var who = "";
+    if (bids.length) {
+      who = '<div class="who">' + bids.slice(0, 8).map(function (b) {
+        return '<div class="w"><b>' + b.name + (b.revises ? " ↓" : "") + "</b><i>" + money(b.size) + "</i></div>";
+      }).join("");
+      if (bids.length > 8) {
+        var rest = bids.slice(8).reduce(function (s, b) { return s + b.size; }, 0);
+        who += '<div class="more">+ ' + (bids.length - 8) + " more · " + money(rest) + "</div>";
+      }
+      who += "</div>";
+    }
+    return head + body + verd + who;
+  }
+  function refreshLadderTip() {
+    if (!hotKey) return;
+    var html = ladderTipHtml(hotKey);
+    if (!html) return;
+    el.tip.innerHTML = html;
+    var row = ladRowNodes[hotKey];
+    if (row) placeTip(row.getBoundingClientRect());
+  }
+
+  el.ladRows.addEventListener("mousemove", function (e) {
+    var row = e.target.closest ? e.target.closest(".lad-row") : null;
+    if (!row) return;
+    var key = row.getAttribute("data-rate");
+    if (key === hotKey) return;
+    if (hotKey && ladRowNodes[hotKey]) ladRowNodes[hotKey].classList.remove("hot");
+    hotKey = key;
+    row.classList.add("hot");
+    refreshLadderTip();
+  });
+  el.ladRows.addEventListener("mouseleave", hideTip);
+
+  /* ---------- static explainers ---------- */
+  document.addEventListener("mouseover", function (e) {
+    var node = e.target.closest ? e.target.closest("[data-tip]") : null;
+    if (!node || node === tipAnchor) return;
+    if (hotKey) return;
+    showStaticTip(node);
+  });
+  document.addEventListener("mouseout", function (e) {
+    var node = e.target.closest ? e.target.closest("[data-tip]") : null;
+    if (node && node === tipAnchor) hideTip();
+  });
+  document.addEventListener("focusin", function (e) {
+    var node = e.target.closest ? e.target.closest("[data-tip]") : null;
+    if (node) showStaticTip(node);
+  });
+  document.addEventListener("focusout", function () { if (tipAnchor) hideTip(); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") hideTip(); });
+  // touch: tapping an info marker toggles it rather than firing a hover that never ends
+  document.addEventListener("click", function (e) {
+    var node = e.target.closest ? e.target.closest("button.info") : null;
+    if (!node) return;
+    e.preventDefault();
+    if (tipAnchor === node) hideTip(); else showStaticTip(node);
+  });
+  window.addEventListener("scroll", hideTip, { passive: true });
+  window.addEventListener("resize", hideTip);
+
   /* ---------- master repaint ---------- */
   function repaint(final) {
     var bk = priceBook();
+    lastBook = bk;
     paintStats(bk);
     paintLadder(bk);
     paintInvestors(bk);
     if (bk.bookAll > 0) paintAllocations(bk, final);
+    refreshLadderTip();
     return bk;
   }
 
@@ -1289,6 +1571,7 @@
     readTerms();
     buildLadder();
     var bk = priceBook();
+    lastBook = bk;
     paintStats(bk); paintLadder(bk);
     el.tape.innerHTML = '<div class="empty">Press “Simulate run” to open the order period</div>';
     el.invHost.innerHTML = '<div class="empty">No orders yet</div>';
@@ -1323,11 +1606,7 @@
     el.reserveIn.value = reserve.toFixed(2);
 
     el.targetFoot.textContent = "30-yr revenue bond · " + Math.round(target / LOT).toLocaleString("en-US") + " lots";
-    el.goalRule.style.setProperty("--g", money(target));
-    // keep the goal-rule caption in sync with the edited target
-    var css = document.getElementById("goalCss");
-    if (!css) { css = document.createElement("style"); css.id = "goalCss"; document.head.appendChild(css); }
-    css.textContent = '.goal-rule::before{content:"' + money(target) + ' TARGET";}';
+    paintTicks();
   }
 
   el.targetIn.addEventListener("change", function () { readTerms(); reset(); });
@@ -1378,6 +1657,7 @@
   paintTimeline(0);
   (function () {
     var bk = priceBook();
+    lastBook = bk;
     paintStats(bk);
     paintLadder(bk);
   })();
