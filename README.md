@@ -46,6 +46,20 @@ Every tile, panel, legend key and control carries a small **`i` marker** — hov
 | **Allocations** | Final pricing: par sold, annual interest cost, savings against the reserve, pro-rata factor at the clearing tier, and a per-investor fill table. |
 | **Book by investor** | Top 12 accounts by aggregate par, updating live. |
 
+### Colour encodings
+
+Every row of the ladder is drawn as **two bars end to end**, both measured along the same cumulative axis:
+
+| Colour | Meaning |
+| --- | --- |
+| **Pale blue** | The running total already committed at *cheaper* rates, before this row adds anything. This is why bars start further right as you move down — each row inherits the total above it. |
+| **Dark blue** | The new money arriving at *this* rate. Its length is the figure printed at the end of the row, and these segments stack into the staircase. |
+| **Grey** | Eligible demand that was outbid — the target was already covered by cheaper money before the stack reached it, so it fills nothing. |
+| **Red hatch** | Above the reserve, disqualified outright. Never enters the cumulative stack, which is why the pale bar stops growing below these rows. |
+| **Blue marker** | Where the cumulative curve crosses the target. Its row is the clearing rate. |
+
+In the order flow, the **rate itself is colour-coded**: blue is the order as first submitted, green means the account revised down to a sharper rate (the revision replaces the original rather than adding to it).
+
 **Controls:** Simulate run · Pause/Resume · speed 1×/2×/4× · Reset · light/dark toggle.
 
 ---

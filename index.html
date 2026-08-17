@@ -163,6 +163,21 @@
   #tip .kv { display: flex; justify-content: space-between; gap: 14px; }
   #tip .kv span:first-child { color: var(--muted); }
   #tip .kv span:last-child { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+  #tip .kv.tot { margin-top: 5px; padding-top: 5px; border-top: 1px solid var(--line-soft); }
+  #tip .kv.tot span:first-child { color: var(--ink); font-weight: 600; }
+  /* swatches that mirror the exact bar colours being described */
+  #tip .key {
+    display: inline-block; width: 11px; height: 9px; margin-right: 6px;
+    border: 1px solid var(--line); vertical-align: 0;
+  }
+  #tip .key.pale { background: var(--blue-wash); }
+  #tip .key.dark { background: var(--blue); }
+  #tip .key.pale.dim { background: var(--paper-2); }
+  #tip .key.dark.dim { background: var(--muted); opacity: .55; }
+  #tip .key.dark.inel {
+    background: var(--bad); opacity: .5;
+    background-image: repeating-linear-gradient(135deg, transparent 0 3px, var(--panel) 3px 4px);
+  }
   #tip .who {
     margin-top: 8px; padding-top: 7px; border-top: 1px solid var(--line-soft);
     display: flex; flex-direction: column; gap: 3px;
@@ -422,18 +437,32 @@
     display: grid; grid-template-columns: 62px minmax(0,1fr) 82px;
     align-items: center; height: 22px; position: relative; cursor: crosshair;
   }
-  /* distinct from --blue-wash, which the cumulative bar uses — otherwise the bar
-     disappears into the highlight on the row being hovered */
-  .lad-row:hover, .lad-row.hot { background: var(--paper-2); }
-  .lad-row.hot .r-rate { color: var(--blue); font-weight: 700; }
+  /* ---- rate label cascade ----
+     These selectors all carry equal specificity, so ORDER decides the winner.
+     Layered deliberately: base, then the quarter-point gridline emphasis, then
+     auction state, then hover last. Putting .decade after the state rules is
+     what previously turned the ineligible 4.75% row white instead of red. */
   .lad-row .r-rate {
     font-family: var(--f-mono); font-variant-numeric: tabular-nums;
     font-size: 11px; color: var(--ink-soft); text-align: right; padding-right: 9px;
   }
+  /* 1 — quarter-point rows read as gridlines: emphasis only, never a state */
+  .lad-row.decade .r-rate { font-weight: 700; color: var(--ink); }
+  /* 2 — auction state overrides that emphasis */
+  .lad-row.above .r-rate { color: var(--muted); font-weight: 400; }
+  .lad-row.inelig .r-rate { color: var(--bad); font-weight: 700; }
+  .lad-row.marker .r-rate { color: var(--blue); font-weight: 700; }
+  /* 3 — hover wins over everything */
+  .lad-row:hover .r-rate, .lad-row.hot .r-rate { color: var(--blue); font-weight: 700; }
+
   .lad-row .r-val {
     font-family: var(--f-mono); font-variant-numeric: tabular-nums;
     font-size: 10.5px; color: var(--muted); text-align: right; padding-left: 8px;
   }
+  /* distinct from --blue-wash, which the cumulative bar uses — otherwise the bar
+     disappears into the highlight on the row being hovered */
+  .lad-row:hover, .lad-row.hot { background: var(--paper-2); }
+
   .r-track { position: relative; height: 14px; }
   .r-track::before {
     content: ""; position: absolute; left: 0; right: 0; top: 50%;
@@ -444,13 +473,10 @@
   .r-inc { background: var(--blue); border-right: 1px solid var(--panel); }
   .lad-row.above .r-cum { background: var(--paper-2); }
   .lad-row.above .r-inc { background: var(--muted); opacity: .55; }
-  .lad-row.inelig .r-rate { color: var(--bad); }
   .lad-row.inelig .r-inc {
     background: var(--bad); opacity: .5;
     background-image: repeating-linear-gradient(135deg, transparent 0 3px, var(--panel) 3px 4px);
   }
-  .lad-row.marker { }
-  .lad-row.marker .r-rate { color: var(--blue); font-weight: 700; }
   .lad-row.marker::after {
     content: ""; position: absolute; inset: -1px 0; border: var(--lw) solid var(--blue); pointer-events: none;
   }
@@ -459,7 +485,6 @@
     font-family: var(--f-mono); font-size: 8.5px; font-weight: 700; letter-spacing: .1em;
     background: var(--blue); color: #FFF; padding: 1px 5px 2px; white-space: nowrap;
   }
-  .lad-row.decade .r-rate { font-weight: 700; color: var(--ink); }
 
   .legend { display: flex; flex-wrap: wrap; gap: 8px 20px; padding: 12px 16px 14px; border-top: var(--lw) solid var(--line); }
   .lg { display: flex; align-items: center; gap: 6px; font-family: var(--f-mono); font-size: 9.5px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
@@ -469,6 +494,13 @@
   .sw.c { background: var(--muted); opacity: .55; }
   .sw.d { background: var(--bad); opacity: .5; background-image: repeating-linear-gradient(135deg, transparent 0 3px, var(--panel) 3px 4px); }
   .sw.e { background: var(--blue); box-shadow: 0 0 0 1.5px var(--ink) inset; width: 10px; height: 10px; }
+  /* the order tape encodes state in the rate's colour, so its key shows coloured type */
+  .lg .swt {
+    font-family: var(--f-mono); font-variant-numeric: tabular-nums;
+    font-size: 10.5px; font-weight: 700; flex: none; letter-spacing: 0;
+  }
+  .lg .swt.new { color: var(--blue); }
+  .lg .swt.rev { color: var(--good); }
 
   /* ---------- tape ---------- */
   .tape { max-height: 508px; overflow: hidden; }
@@ -688,7 +720,7 @@
       <div class="panel-hd">
         <div class="hd-l">
           <h2>Demand ladder — capital committed by rate</h2>
-          <button type="button" class="info" data-tip-t="Demand ladder" data-tip="Each row is a 0.05% rate bucket. The solid blue bar is new demand arriving at that rate; the pale bar behind it is everything already committed at or below it. Together they trace a cumulative demand curve down the page. Hover any row to see exactly which investors are in it.">i</button>
+          <button type="button" class="info" data-tip-t="Demand ladder" data-tip="Each row is a 0.05% rate bucket, drawn as two bars end to end. The pale blue bar is everything already committed at cheaper rates; the dark blue bar is the new money this rate adds. So each row starts where the row above it ended, and the dark segments stack down the page into a cumulative demand curve. Grey rows were outbid, red-hatched rows are above the reserve. Hover any row for the investors in it.">i</button>
         </div>
         <span class="note" id="ladNote">Cumulative, ascending</span>
       </div>
@@ -709,11 +741,11 @@
         </div>
       </div>
       <div class="legend">
-        <span class="lg" data-tip-t="New demand" data-tip="Par committed by orders arriving at exactly this rate — the step the cumulative curve takes at this row."><i class="sw a"></i>New demand at this rate</span>
-        <span class="lg" data-tip-t="Cumulative" data-tip="Everything committed at this rate or any lower rate. This is what the dashed target mark is measured against."><i class="sw b"></i>Cumulative at or below</span>
-        <span class="lg" data-tip-t="Above clearing" data-tip="These orders were outbid. The target was already covered by cheaper money before the stack reached them, so they receive nothing."><i class="sw c"></i>Above clearing — no fill</span>
-        <span class="lg" data-tip-t="Above reserve" data-tip="These orders exceed the issuer&rsquo;s coupon cap and are disqualified outright — they never enter the cumulative stack at all."><i class="sw d"></i>Above reserve — ineligible</span>
-        <span class="lg" data-tip-t="Crossing point" data-tip="The blue marker sits where the cumulative curve crosses the target. Its row is the clearing rate."><i class="sw e"></i>Where demand covers the target</span>
+        <span class="lg" data-tip-t="Dark blue — new demand" data-tip="Every row is drawn as two bars end to end. The dark blue one is the money arriving at exactly this rate — the step the cumulative curve takes here. Its length is the figure printed at the end of the row."><i class="sw a"></i>Dark blue — new demand at this rate</span>
+        <span class="lg" data-tip-t="Pale blue — running total" data-tip="The pale blue bar is everything already committed at lower rates, before this row adds anything. It is why the bars start further right as you move down: each row inherits the total above it, then the dark blue segment extends it. Pale plus dark is the running total at or below this rate."><i class="sw b"></i>Pale blue — running total from cheaper rates</span>
+        <span class="lg" data-tip-t="Grey — outbid" data-tip="A row turns grey once the target has already been covered by cheaper money before the stack reaches it. The demand is real and eligible, but it arrived above the clearing rate, so it receives nothing."><i class="sw c"></i>Grey — above clearing, no fill</span>
+        <span class="lg" data-tip-t="Red hatch — ineligible" data-tip="These orders exceed the issuer&rsquo;s coupon cap and are disqualified outright, however large. They never enter the cumulative stack, which is why the pale bar stops growing below them."><i class="sw d"></i>Red hatch — above reserve, ineligible</span>
+        <span class="lg" data-tip-t="Crossing point" data-tip="The marker sits where the cumulative curve crosses the dashed target. The row it lands on is the clearing rate — the rate that filled the last bond, and the rate every winning order pays."><i class="sw e"></i>Marker — where demand covers the target</span>
       </div>
     </div>
 
@@ -721,12 +753,16 @@
       <div class="panel-hd">
         <div class="hd-l">
           <h2>Live order flow</h2>
-          <button type="button" class="info" data-tip-t="Live order flow" data-tip="Orders as they arrive, newest first. Each investor names a rate they require and a par amount in $100,000 increments. Flow is deliberately back-loaded across the three days, the way a real order period fills &mdash; and some accounts revise their rate down late on day three to protect an allocation they now expect to lose.">i</button>
+          <button type="button" class="info" data-tip-t="Live order flow" data-tip="Orders as they arrive, newest first. Each investor names a rate they require and a par amount in $100,000 increments. The rate is colour-coded: blue is the order as first submitted, green means the account revised down to a sharper rate to protect an allocation. Flow is deliberately back-loaded across the three days, the way a real order period fills.">i</button>
         </div>
         <span class="note" id="tapeNote">Idle</span>
       </div>
       <div class="tape" id="tape">
         <div class="empty">Press “Simulate run” to open the order period</div>
+      </div>
+      <div class="legend">
+        <span class="lg" data-tip-t="Blue rate — first bid" data-tip="A blue rate is the order exactly as the account first submitted it: the yield they say they require to buy. Most orders arrive once and never move."><i class="swt new">4.10%</i>Blue — order as first submitted</span>
+        <span class="lg" data-tip-t="Green rate — revised down" data-tip="A green rate means the account came back and re-bid lower, usually late on day three once it could see the book filling with cheaper money and realised its original rate would be outbid. The revision replaces the original order rather than adding to it, so the book does not double-count the size — which is why the order count can rise more slowly than the number of rows in this tape."><i class="swt rev">3.95%</i>Green — account revised down</span>
       </div>
     </div>
 
@@ -1208,8 +1244,11 @@
     var row = document.createElement("div");
     row.className = "tape-row in" + (b.revises ? " rev" : "");
     var flags = "";
-    if (b.revises) flags = '<span class="revtag">Revised</span>';
-    else if (b.rate > reserve + 1e-9) flags = '<span class="ineltag">Above reserve</span>';
+    if (b.revises) {
+      flags = '<span class="revtag" data-tip-t="Revised order" data-tip="This account re-bid at a lower rate than it first asked for, to avoid being outbid as the book filled. The green rate is the new one, and it replaces the original order rather than adding to it.">Revised</span>';
+    } else if (b.rate > reserve + 1e-9) {
+      flags = '<span class="ineltag" data-tip-t="Above reserve" data-tip="This order asks for more than the ' + pct(reserve) + ' reserve, the highest coupon the issuer will pay, so it is disqualified no matter how large it is or how short the book runs.">Above reserve</span>';
+    }
     row.innerHTML =
       '<div class="tp-t">D' + c.day + " " + c.label.replace(" ", "") + "</div>" +
       '<div class="tp-name"><div class="nm">' + b.name + flags + "</div>" +
@@ -1408,10 +1447,20 @@
     var head = '<div class="th"><span>Bids at <b>' + key + "%</b></span><span>" +
       (bids.length ? bids.length + (bids.length === 1 ? " order" : " orders") : "no orders") + "</span></div>";
 
-    var body = '<div class="kv"><span>New demand here</span><span>' +
-      (inc ? moneyExact(inc) : "—") + "</span></div>";
-    if (!inelig) {
-      body += '<div class="kv"><span>Cumulative at or below</span><span>' + moneyExact(cum) + "</span></div>" +
+    // label each bar by the colour it is actually drawn in on this row
+    var darkCls = inelig ? "inel" : (bk.covered && rate > bk.clearing + 1e-9 ? "dim" : "");
+    var body;
+    if (inelig) {
+      body = '<div class="kv"><span><b class="key dark ' + darkCls + '"></b>Demand at this rate</span><span>' +
+        (inc ? moneyExact(inc) : "—") + "</span></div>" +
+        '<div class="kv"><span>Counts toward the book</span><span>No</span></div>';
+    } else {
+      var prev = Math.max(0, cum - inc);
+      body = '<div class="kv"><span><b class="key pale ' + darkCls + '"></b>Pale bar — from cheaper rates</span><span>' +
+        (prev ? moneyExact(prev) : "—") + "</span></div>" +
+        '<div class="kv"><span><b class="key dark ' + darkCls + '"></b>Dark bar — new at ' + key + "%</span><span>" +
+        (inc ? moneyExact(inc) : "—") + "</span></div>" +
+        '<div class="kv tot"><span>Total at or below</span><span>' + moneyExact(cum) + "</span></div>" +
         '<div class="kv"><span>Share of target</span><span>' + (cum / target * 100).toFixed(1) + "%</span></div>";
     }
 
