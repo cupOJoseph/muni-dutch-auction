@@ -374,8 +374,7 @@
   }
 
   /* ---------- 2-col grids ---------- */
-  .grid-main { display: grid; grid-template-columns: minmax(0,1.32fr) minmax(0,1fr); gap: 26px; align-items: start; }
-  .grid-tail { display: grid; grid-template-columns: minmax(0,1.32fr) minmax(0,1fr); gap: 26px; align-items: start; }
+  .grid-split { display: grid; grid-template-columns: minmax(0,1.15fr) minmax(0,1fr); gap: 26px; align-items: start; }
 
   .panel-hd {
     display: flex; justify-content: space-between; align-items: center; gap: 14px;
@@ -394,12 +393,12 @@
      point on that axis, not a threshold that applies to each rate row */
   .lad-axis-title {
     display: flex; align-items: center; gap: 7px;
-    margin: 0 0 11px; padding-left: 62px;
+    margin: 0 0 11px; padding-left: 72px;
   }
   .lad-axis-title .arrow { color: var(--line-soft); font-size: 11px; }
 
   .lad-scale { position: relative; height: 44px; margin: 0; }
-  .lad-scale .zone { position: absolute; left: 62px; right: 82px; top: 0; height: 100%; }
+  .lad-scale .zone { position: absolute; left: 72px; right: 96px; top: 0; height: 100%; }
   .lad-scale .tick {
     position: absolute; bottom: 0;
     font-family: var(--f-mono); font-size: 9px; color: var(--muted); letter-spacing: .06em;
@@ -422,7 +421,7 @@
   }
 
   .lad-rows { position: relative; display: flex; flex-direction: column; }
-  .lad-overlay { position: absolute; left: 62px; right: 82px; top: 0; bottom: 0; pointer-events: none; z-index: 5; }
+  .lad-overlay { position: absolute; left: 72px; right: 96px; top: 0; bottom: 0; pointer-events: none; z-index: 5; }
   .axis-line { position: absolute; left: 0; top: -3px; bottom: -3px; border-left: 1px solid var(--line-soft); }
   /* dashed, unlabelled: a landmark on the cumulative axis */
   .goal-rule { position: absolute; top: -3px; bottom: -3px; border-left: var(--lw) dashed var(--ink); }
@@ -434,36 +433,36 @@
   .cross-dot.on { display: block; }
 
   .lad-row {
-    display: grid; grid-template-columns: 62px minmax(0,1fr) 82px;
-    align-items: center; height: 22px; position: relative; cursor: crosshair;
+    display: grid; grid-template-columns: 72px minmax(0,1fr) 96px;
+    align-items: center; height: 29px; position: relative; cursor: crosshair;
   }
   /* ---- rate label cascade ----
-     These selectors all carry equal specificity, so ORDER decides the winner.
-     Layered deliberately: base, then the quarter-point gridline emphasis, then
-     auction state, then hover last. Putting .decade after the state rules is
-     what previously turned the ineligible 4.75% row white instead of red. */
+     Colour is reserved for auction state, so the quarter-point gridline rows
+     are emphasised by WEIGHT ONLY — no colour of their own. That is what keeps
+     an ineligible 4.75% red like its neighbours instead of white. Order still
+     runs base -> gridline -> state -> hover, since these carry equal specificity. */
   .lad-row .r-rate {
     font-family: var(--f-mono); font-variant-numeric: tabular-nums;
-    font-size: 11px; color: var(--ink-soft); text-align: right; padding-right: 9px;
+    font-size: 12.5px; color: var(--ink-soft); text-align: right; padding-right: 11px;
   }
-  /* 1 — quarter-point rows read as gridlines: emphasis only, never a state */
-  .lad-row.decade .r-rate { font-weight: 700; color: var(--ink); }
-  /* 2 — auction state overrides that emphasis */
-  .lad-row.above .r-rate { color: var(--muted); font-weight: 400; }
-  .lad-row.inelig .r-rate { color: var(--bad); font-weight: 700; }
-  .lad-row.marker .r-rate { color: var(--blue); font-weight: 700; }
+  /* 1 — quarter-point rows read as gridlines: weight only, never a colour */
+  .lad-row.decade .r-rate { font-weight: 700; }
+  /* 2 — auction state owns colour */
+  .lad-row.above .r-rate { color: var(--muted); }
+  .lad-row.inelig .r-rate { color: var(--bad); }
+  .lad-row.marker .r-rate { color: var(--blue); }
   /* 3 — hover wins over everything */
-  .lad-row:hover .r-rate, .lad-row.hot .r-rate { color: var(--blue); font-weight: 700; }
+  .lad-row:hover .r-rate, .lad-row.hot .r-rate { color: var(--blue); }
 
   .lad-row .r-val {
     font-family: var(--f-mono); font-variant-numeric: tabular-nums;
-    font-size: 10.5px; color: var(--muted); text-align: right; padding-left: 8px;
+    font-size: 11.5px; color: var(--muted); text-align: right; padding-left: 11px;
   }
   /* distinct from --blue-wash, which the cumulative bar uses — otherwise the bar
      disappears into the highlight on the row being hovered */
   .lad-row:hover, .lad-row.hot { background: var(--paper-2); }
 
-  .r-track { position: relative; height: 14px; }
+  .r-track { position: relative; height: 19px; }
   .r-track::before {
     content: ""; position: absolute; left: 0; right: 0; top: 50%;
     border-top: 1px dotted var(--line-soft);
@@ -481,7 +480,7 @@
     content: ""; position: absolute; inset: -1px 0; border: var(--lw) solid var(--blue); pointer-events: none;
   }
   .lad-row.marker .clears {
-    position: absolute; right: 86px; top: 3px; z-index: 6;
+    position: absolute; right: 100px; top: 6px; z-index: 6;
     font-family: var(--f-mono); font-size: 8.5px; font-weight: 700; letter-spacing: .1em;
     background: var(--blue); color: #FFF; padding: 1px 5px 2px; white-space: nowrap;
   }
@@ -550,7 +549,7 @@
   .inv-bar i { position: absolute; inset: 0 auto 0 0; background: var(--navy); transition: width .3s; }
 
   /* ---------- allocation table ---------- */
-  .tbl-scroll { overflow-x: auto; max-height: 430px; overflow-y: auto; }
+  .tbl-scroll { overflow-x: auto; max-height: 520px; overflow-y: auto; }
   table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
   thead th {
     position: sticky; top: 0; z-index: 2;
@@ -574,13 +573,15 @@
   .stat.inel { color: var(--bad); }
 
   /* ---------- results ---------- */
-  .res-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); }
+  /* six cells: 3 across at full width, so the row/column borders must follow suit */
+  .res-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); }
   .res-cell {
-    padding: 12px 14px 13px;
+    padding: 14px 16px 15px;
     border-right: 1px solid var(--line-soft); border-bottom: 1px solid var(--line-soft);
-    display: flex; flex-direction: column; gap: 2px;
+    display: flex; flex-direction: column; gap: 3px;
   }
-  .res-cell:nth-child(2n) { border-right: 0; }
+  .res-cell:nth-child(3n) { border-right: 0; }
+  .res-cell:nth-last-child(-n+3) { border-bottom: 0; }
   .res-cell .v { font-family: var(--f-mono); font-variant-numeric: tabular-nums; font-size: 19px; letter-spacing: -0.02em; }
   .res-cell .v.pos { color: var(--good); }
   .res-cell .sub { font-family: var(--f-mono); font-size: 9.5px; color: var(--muted); letter-spacing: .04em; }
@@ -600,24 +601,36 @@
   }
 
   @media (max-width: 1080px) {
-    .grid-main, .grid-tail { grid-template-columns: 1fr; }
+    .grid-split { grid-template-columns: 1fr; }
     .tiles { grid-template-columns: repeat(2, 1fr); }
     .tile.hero { grid-column: 1 / -1; }
+    /* back to 2 across: undo the 3-column border pattern before applying the 2-column one */
+    .res-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .res-cell:nth-child(3n) { border-right: 1px solid var(--line-soft); }
+    .res-cell:nth-last-child(-n+3) { border-bottom: 1px solid var(--line-soft); }
+    .res-cell:nth-child(2n) { border-right: 0; }
+    .res-cell:nth-last-child(-n+2) { border-bottom: 0; }
   }
   @media (max-width: 700px) {
-    .wrap { padding: 12px 14px 44px; gap: 14px; }
+    .wrap { padding: 12px 14px 44px; gap: 18px; }
     .masthead { grid-template-columns: 1fr; }
     .mast-r { border-left: 0; border-top: var(--lw-thick) solid var(--line); align-items: stretch; min-width: 0; }
     .clock { text-align: left; }
     .ctrls { flex-wrap: wrap; }
     .tiles { grid-template-columns: 1fr; }
-    .lad-scale .zone, .lad-overlay { left: 52px; right: 64px; }
-    .lad-axis-title { padding-left: 52px; }
-    .lad-row { grid-template-columns: 52px minmax(0,1fr) 64px; }
-    .lad-row.marker .clears { right: 68px; }
+    .lad-scale .zone, .lad-overlay { left: 56px; right: 68px; }
+    .lad-axis-title { padding-left: 56px; }
+    .lad-row { grid-template-columns: 56px minmax(0,1fr) 68px; height: 26px; }
+    .lad-row .r-rate { font-size: 11px; padding-right: 8px; }
+    .lad-row .r-val { font-size: 10.5px; padding-left: 8px; }
+    .lad-row.marker .clears { right: 72px; }
     #tip { max-width: calc(100vw - 28px); }
     .res-grid { grid-template-columns: 1fr; }
     .res-cell { border-right: 0; }
+    .res-cell:nth-child(3n) { border-right: 0; }
+    /* single column: only the very last cell drops its divider */
+    .res-cell:nth-last-child(-n+3) { border-bottom: 1px solid var(--line-soft); }
+    .res-cell:last-child { border-bottom: 0; }
   }
   @media (prefers-reduced-motion: reduce) {
     * { animation: none !important; transition: none !important; }
@@ -651,7 +664,7 @@
         <button class="ghost" id="pauseBtn" disabled data-tip-t="Pause" data-tip="Freeze the order period to inspect the book mid-auction. Hovering the ladder while paused is the easiest way to see who sits at each rate.">Pause</button>
         <button class="ghost" id="speedBtn" data-tip-t="Playback speed" data-tip="Run the 90-second order period at 1×, 2× or 4×. Pricing is unaffected — only how fast the clock advances.">1×</button>
         <button class="ghost" id="resetBtn" disabled>Reset</button>
-        <button class="ghost" id="themeBtn" aria-label="Switch between light and dark">◐</button>
+        <button class="ghost" id="themeBtn" data-tip-t="Theme" data-tip="Switch between the light and dark palettes. The page follows your system setting until you pick one here.">Light mode</button>
       </div>
     </div>
   </header>
@@ -713,10 +726,8 @@
     </div>
   </section>
 
-  <!-- ============ LADDER + TAPE ============ -->
-  <section class="grid-main">
-
-    <div class="box">
+  <!-- ============ DEMAND LADDER (full width) ============ -->
+  <section class="box ladder-panel">
       <div class="panel-hd">
         <div class="hd-l">
           <h2>Demand ladder — capital committed by rate</h2>
@@ -747,7 +758,10 @@
         <span class="lg" data-tip-t="Red hatch — ineligible" data-tip="These orders exceed the issuer&rsquo;s coupon cap and are disqualified outright, however large. They never enter the cumulative stack, which is why the pale bar stops growing below them."><i class="sw d"></i>Red hatch — above reserve, ineligible</span>
         <span class="lg" data-tip-t="Crossing point" data-tip="The marker sits where the cumulative curve crosses the dashed target. The row it lands on is the clearing rate — the rate that filled the last bond, and the rate every winning order pays."><i class="sw e"></i>Marker — where demand covers the target</span>
       </div>
-    </div>
+  </section>
+
+  <!-- ============ ORDER FLOW + INVESTOR BOOK ============ -->
+  <section class="grid-split">
 
     <div class="box">
       <div class="panel-hd">
@@ -766,12 +780,21 @@
       </div>
     </div>
 
+    <div class="box">
+      <div class="panel-hd">
+        <div class="hd-l">
+          <h2>Book by investor</h2>
+          <button type="button" class="info" data-tip-t="Book by investor" data-tip="Aggregate par requested per investor, largest first, updating live as orders land. Size here is demand, not an allocation &mdash; a large order placed at an uncompetitive rate still ends up with nothing.">i</button>
+        </div>
+        <span class="note" id="invNote">Top 12 by par</span>
+      </div>
+      <div id="invHost"><div class="empty">No orders yet</div></div>
+    </div>
+
   </section>
 
-  <!-- ============ RESULTS + INVESTORS ============ -->
-  <section class="grid-tail">
-
-    <div class="box">
+  <!-- ============ ALLOCATIONS (full width) ============ -->
+  <section class="box">
       <div class="panel-hd">
         <div class="hd-l">
           <h2>Allocations at the clearing rate</h2>
@@ -791,19 +814,6 @@
           </ol>
         </div>
       </div>
-    </div>
-
-    <div class="box">
-      <div class="panel-hd">
-        <div class="hd-l">
-          <h2>Book by investor</h2>
-          <button type="button" class="info" data-tip-t="Book by investor" data-tip="Aggregate par requested per investor, largest first, updating live as orders land. Size here is demand, not an allocation &mdash; a large order placed at an uncompetitive rate still ends up with nothing.">i</button>
-        </div>
-        <span class="note" id="invNote">Top 12 by par</span>
-      </div>
-      <div id="invHost"><div class="empty">No orders yet</div></div>
-    </div>
-
   </section>
 
   <p class="footnote">
@@ -1689,15 +1699,31 @@
   });
   el.reset.addEventListener("click", reset);
 
+  /* ---------- theme ---------- */
   var themeBtn = $("themeBtn");
+  var prefersDark = window.matchMedia("(prefers-color-scheme: dark)");
+
+  // no explicit choice yet means the OS preference is in charge
+  function isDark() {
+    var set = document.documentElement.getAttribute("data-theme");
+    return set ? set === "dark" : prefersDark.matches;
+  }
+  // the button names the theme it switches TO, not the one you are in
+  function syncThemeBtn() {
+    var dark = isDark();
+    themeBtn.textContent = dark ? "☀ Light mode" : "☾ Dark mode";
+    themeBtn.setAttribute("aria-label", dark ? "Switch to light mode" : "Switch to dark mode");
+  }
   themeBtn.addEventListener("click", function () {
-    var root = document.documentElement;
-    var dark = root.getAttribute("data-theme") === "dark";
-    if (!root.getAttribute("data-theme")) {
-      dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    }
-    root.setAttribute("data-theme", dark ? "light" : "dark");
+    document.documentElement.setAttribute("data-theme", isDark() ? "light" : "dark");
+    syncThemeBtn();
+    if (lastBook) paintLadder(lastBook);   // bar colours are token-driven; re-read them
   });
+  // keep the label honest if the OS flips while we are still deferring to it
+  prefersDark.addEventListener("change", function () {
+    if (!document.documentElement.getAttribute("data-theme")) syncThemeBtn();
+  });
+  syncThemeBtn();
 
   /* ================= init ================= */
   buildTimeline();
