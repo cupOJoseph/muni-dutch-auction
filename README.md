@@ -34,9 +34,12 @@ Both the target par amount and the reserve rate are editable in the header tiles
 
 ## Reading the interface
 
+Every tile, panel, legend key and control carries a small **`i` marker** — hover, focus or tap it for an explanation of what that element means and how that part of the auction works.
+
 | Panel | What it shows |
 | --- | --- |
-| **Demand ladder** | The core visual: a cumulative demand curve drawn as a waterfall. Each row is a 0.05% rate bucket — the solid blue segment is *new* demand at that rate, the pale segment behind it is everything committed at or below. Where the cumulative crosses the target rule, the auction clears. |
+| **Demand ladder** | The core visual: a cumulative demand curve drawn as a waterfall. Each row is a 0.05% rate bucket — the solid blue segment is *new* demand at that rate, the pale segment behind it is everything committed at or below. Both are measured along one shared axis, so the dashed $500M mark is a single point on that axis (the moment demand covers the deal), not a threshold each rate has to hit on its own. A blue marker pins where the curve actually crosses. |
+| **Rate-level hover** | Hover any ladder row — including while the auction is running — for the orders behind it: new demand at that rate, cumulative to that point, share of target, whether it fills, and the individual investors with their sizes. |
 | **Live order flow** | Every order as it lands: who bid, what type of account, par amount, rate. Revisions and above-reserve bids are flagged. |
 | **Capital committed vs. target** | Eligible demand against the target, with the oversubscribed excess hatched beyond the notch. |
 | **Clearing rate** | Updates live as the book builds. Reads *Not covered* until eligible demand first reaches the target, then tightens downward as aggressive orders arrive. |
